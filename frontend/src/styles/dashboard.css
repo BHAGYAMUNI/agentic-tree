@@ -1,0 +1,504 @@
+/* Root layout */
+.dashboard-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  position: relative;
+}
+
+.dashboard-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1.8fr) minmax(320px, 1.6fr);
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  max-height: calc(100vh - 80px);
+  overflow: hidden;
+}
+
+.dashboard-panel {
+  background-color: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  height: 100%;
+  max-height: calc(100vh - 100px);
+}
+
+.dashboard-panel:hover {
+  box-shadow: 0 15px 30px rgba(15, 23, 42, 0.1);
+}
+
+/* Hide mobile nav bar on desktop */
+.mobile-nav-bar {
+  display: none;
+}
+
+/* Mobile panels hidden by default on desktop */
+.dashboard-panel.mobile-hidden {
+  display: flex;
+}
+
+.dashboard-panel.mobile-active {
+  display: flex;
+}
+
+/* Left Panel Section Selector */
+.left-panel-selector {
+  display: none;
+  flex-direction: row;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border);
+  background-color: var(--bg-tertiary);
+  flex-shrink: 0;
+}
+
+.left-panel-btn {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+  transition: all var(--transition-fast);
+}
+
+.left-panel-btn:hover:not(:disabled) {
+  border-color: var(--primary);
+  background-color: rgba(102, 126, 234, 0.05);
+}
+
+.left-panel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.left-panel-btn.active {
+  border-color: var(--primary);
+  background-color: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Left Panel Content Sections */
+.left-panel-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Hide section on mobile when not active */
+.left-panel-content.mobile-hidden-section {
+  display: none;
+}
+
+/* Manual Section Header with Back Button */
+.manual-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border);
+  background-color: var(--bg-tertiary);
+  flex-shrink: 0;
+}
+
+.back-to-trees-btn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 12px;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.back-to-trees-btn:hover {
+  border-color: var(--primary);
+  background-color: rgba(102, 126, 234, 0.05);
+  color: var(--primary);
+}
+
+.selected-tree-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 18px;
+  flex: 1;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.dashboard-panel-left {
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.dashboard-panel-center {
+  min-width: 0;
+}
+
+.dashboard-panel-right {
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.panel-header {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--border);
+  background-color: var(--bg-tertiary);
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.panel-body {
+  padding: var(--spacing-md) var(--spacing-lg);
+  overflow: auto;
+}
+
+/* Tree list */
+.tree-create-form {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.tree-create-form input {
+  flex: 1;
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.tree-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tree-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background-color: var(--bg-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tree-list-item:hover {
+  border-color: var(--primary);
+  background-color: var(--bg-tertiary);
+}
+
+.tree-list-item.selected {
+  border-color: var(--primary);
+  background-color: rgba(102, 126, 234, 0.08);
+}
+
+/* Dark-mode override: make selected tree text black for contrast */
+html[data-theme="dark"] .tree-list-item.selected {
+  background-color: rgba(102, 126, 234, 0.2);
+}
+
+html[data-theme="dark"] .tree-list-item.selected .tree-name {
+  color: black;
+}
+
+.tree-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.tree-item-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.btn-icon {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.btn-icon:hover {
+  background-color: rgba(148, 163, 184, 0.2);
+}
+
+.btn-icon.danger:hover {
+  background-color: rgba(248, 113, 113, 0.16);
+}
+
+.tree-rename-form {
+  display: flex;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.tree-rename-form input {
+  flex: 1;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.btn.btn-xs {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.tree-list-empty {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Right panel stacking: Chat */
+.dashboard-panel-right .chat-panel-container {
+  flex: 1;
+  min-height: 260px;
+}
+
+/* Mobile Menu Toggle Button */
+.mobile-menu-toggle {
+  display: none;
+  position: fixed;
+  top: 70px;
+  left: 20px;
+  z-index: 999;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+/* Responsive layout */
+@media (max-width: 1200px) {
+  .dashboard-layout {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr);
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "left center"
+      "right right";
+  }
+
+  .dashboard-panel-left {
+    grid-area: left;
+  }
+
+  .dashboard-panel-center {
+    grid-area: center;
+  }
+
+  .dashboard-panel-right {
+    grid-area: right;
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    gap: var(--spacing-sm);
+  }
+
+  .dashboard-panel {
+    border-radius: var(--radius-md);
+  }
+
+  .dashboard-panel-left {
+    order: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Show left panel selector on tablet/desktop when layout stacks */
+  .dashboard-panel-left .left-panel-selector {
+    display: flex;
+  }
+
+  /* Left panel content takes remaining space with scroll */
+  .left-panel-content {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .dashboard-panel-center {
+    order: 2;
+  }
+
+  .dashboard-panel-right {
+    order: 3;
+    min-width: 0;
+  }
+
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-layout {
+    padding: 0;
+    gap: 0;
+    grid-template-columns: 1fr;
+    position: relative;
+    height: calc(100vh - 70px);
+    margin: 0;
+  }
+
+  .dashboard-panel-left {
+    min-width: 0;
+  }
+
+  .dashboard-panel-right {
+    min-width: 0;
+  }
+
+  .dashboard-panel {
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  /* Mobile panel visibility */
+  .dashboard-panel.mobile-hidden {
+    display: none !important;
+  }
+
+  .dashboard-panel.mobile-active {
+    display: flex !important;
+    width: 100vw;
+    height: calc(100vh - 70px);
+    position: relative;
+    overflow: hidden;
+    overflow-x: hidden;
+    border-radius: 0;
+    flex-direction: column;
+  }
+
+  /* Show left panel selector on mobile */
+  .dashboard-panel-left .left-panel-selector {
+    display: flex;
+  }
+
+  /* On mobile, hide inactive sections */
+  .left-panel-content.mobile-hidden-section {
+    display: none !important;
+  }
+
+  /* On mobile, show active section */
+  .left-panel-content {
+    display: flex !important;
+  }
+
+  /* Hide back button header on mobile (use tab buttons instead) */
+  .manual-section-header {
+    display: none;
+  }
+
+  /* Left panel content fills remaining space with scroll */
+  .dashboard-panel-left .left-panel-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .panel-header h2 {
+    font-size: 14px;
+  }
+
+  .tree-create-form {
+    flex-direction: column;
+  }
+
+  /* Mobile Navigation Bar */
+  .mobile-nav-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 70px;
+    background-color: var(--bg-tertiary);
+    border-top: 1px solid var(--border);
+    gap: 0;
+    padding: 8px 0;
+    z-index: 100;
+    justify-content: space-around;
+    align-items: center;
+    margin: 0;
+  }
+
+  .mobile-nav-btn {
+    flex: 1;
+    height: 100%;
+    border: none;
+    background: transparent;
+    font-size: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    border-bottom: 3px solid transparent;
+    color: var(--text-secondary);
+  }
+
+  .mobile-nav-btn.active {
+    border-bottom-color: var(--primary);
+    color: var(--primary);
+    background-color: rgba(102, 126, 234, 0.05);
+  }
+
+  .mobile-nav-btn:active {
+    background-color: rgba(102, 126, 234, 0.1);
+  }
+}
+
+  .tree-create-form input {
+    width: 100%;
+  }
+
+  .mobile-menu-toggle {
+    top: 65px;
+    left: 10px;

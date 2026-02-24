@@ -1,0 +1,172 @@
+/* Tree Canvas Styles */
+.tree-canvas-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 420px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.tree-canvas-header {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border);
+  background-color: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tree-canvas-header h3 {
+  margin-bottom: 0;
+  color: var(--text-primary);
+}
+
+/* Dark-mode override: ensure header title is visible when theme is dark */
+html[data-theme="dark"] .tree-canvas-header h3 {
+  color: white;
+}
+
+.tree-canvas-body {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--bg-secondary);
+}
+
+/* React Flow Customization */
+.react-flow-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+.react-flow__node {
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 80px;
+  text-align: center;
+}
+
+.react-flow__node:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.react-flow__node.selected {
+  border-color: var(--primary);
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+/* Dark-mode override: make selected node text black for visibility */
+html[data-theme="dark"] .react-flow__node.selected {
+  color: black;
+  background-color: rgba(102, 126, 234, 0.25);
+}
+
+.react-flow__node.highlighted {
+  border-color: var(--success);
+  background-color: rgba(72, 187, 120, 0.1);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+/* Dark-mode override: make highlighted node text black for visibility */
+html[data-theme="dark"] .react-flow__node.highlighted {
+  color: black;
+  background-color: rgba(72, 187, 120, 0.25);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(72, 187, 120, 0);
+  }
+}
+
+.react-flow__edge-path {
+  stroke: var(--border);
+  stroke-width: 2;
+  transition: all var(--transition-fast);
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--primary);
+  stroke-width: 3;
+}
+
+/* Tree Canvas Controls */
+.tree-canvas-controls {
+  position: absolute;
+  bottom: var(--spacing-md);
+  right: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  z-index: 10;
+}
+
+.tree-canvas-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  border: none;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all var(--transition-fast);
+}
+
+.tree-canvas-btn:hover {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* No Tree Message */
+.no-tree-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: var(--spacing-lg);
+}
+
+.no-tree-message p {
+  margin-bottom: 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .tree-canvas-container {
+    min-height: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  .tree-canvas-header {
+    flex-shrink: 0;
+  }
+
+  .tree-canvas-body {
+    flex: 1;
+    height: 100%;
+  }
+}

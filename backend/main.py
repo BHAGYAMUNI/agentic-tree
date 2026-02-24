@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from database import engine, SessionLocal
@@ -123,8 +124,9 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     return {"detail": exc.errors()}
 
 # Create tables in database
-Base.metadata.create_all(bind=engine)
 
+if os.environ.get("RUNNING_TESTS") != "1":
+    Base.metadata.create_all(bind=engine)
 
 # Dependency to get DB session
 def get_db():

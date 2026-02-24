@@ -1,8 +1,8 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from venv.models import Base, User, TreeSession
-from venv.auth import hash_password
+from models import Base, User, TreeSession
+from auth import hash_password
 
 DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///./dev.db')
 

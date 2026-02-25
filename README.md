@@ -1,175 +1,303 @@
-# Agentic Tree - Interactive Tree Data Structure Explorer
+# Agentic Tree - Binary Tree Data Structure Explorer
 
-A full-stack web application for visualizing, manipulating, and intelligently analyzing binary tree data structures using **React**, **FastAPI**, and **AI/LLM** integration.
+A full-stack web application for visualizing and intelligently analyzing binary tree data structures with AI chat integration.
 
-## 🌟 Features
-
-### Frontend ✨ (Recently Enhanced)
-- **3-Panel Layout**: Optimized Controls | Canvas | Chat interface
-- **Enhanced Navigation**: Save/Load/Share tree operations from top bar
-- **Visual Tree Rendering**: Interactive tree canvas with React Flow
-- **Manual Controls**: Insert, delete, **edit**, search, and traverse nodes
-- **Chat with Timestamps**: AI-powered interactions with timestamped messages
-- **Traversal Animations**: Pre-order, in-order, and post-order traversal visualization
-- **Mobile Responsive**: Fully responsive design (Desktop/Tablet/Mobile)
-- **Dark Mode Support**: Built-in light/dark theme with CSS variables
-- **Authentication**: Register, login, and token-based session management
-- **Redux State Management**: Centralized tree and authentication state
-
-### Backend
-- **RESTful API**: FastAPI with full CRUD operations for trees
-- **JWT Authentication**: Secure access tokens and refresh token flow
-- **Tree Operations**: Insert, delete, reset, search, **update** nodes
-- **Chat Integration**: AI-powered natural language interface (OpenAI GPT-3.5 Turbo)
-- **Database**: SQLAlchemy ORM with PostgreSQL/SQLite support
-- **Alembic Migrations**: Version-controlled database schema
-- **Rate Limiting**: Built-in request throttling
-- **Logging & Monitoring**: Structured logging and optional Prometheus metrics
-
-### DevOps & Testing
-- **Docker Compose**: Easy local development and production deployment
-- **CI/CD**: GitHub Actions automated testing and builds
-- **Backend Tests**: pytest suite for tree utilities and API endpoints
-- **Frontend Tests**: Jest + React Testing Library (scaffolded)
+**Live Demo:**
+- Frontend: https://agentic-tree-2.onrender.com/dashboard
+- Backend API: https://agentic-tree-1.onrender.com/
+- API Documentation: https://agentic-tree-1.onrender.com/docs
 
 ---
 
-## 📖 Recent UI Improvements (Feb 2026)
+## 🌟 Features Implemented
 
-We've significantly enhanced the UI to match professional design standards:
+### Core Functionality
+- ✅ **User Authentication** - Register, login, JWT tokens with bcrypt password hashing
+- ✅ **Binary Tree CRUD** - Create, insert, delete, search, update nodes
+- ✅ **Tree Visualization** - Interactive React Flow canvas displaying binary trees
+- ✅ **AI Chat Integration** - Ask questions about trees, get intelligent responses
+- ✅ **Chat History** - Persistent storage of all chat interactions
+- ✅ **Tree Operations** - Insert, delete, search, in-order/pre-order/post-order traversals
+- ✅ **Responsive Design** - Works on desktop, tablet, and mobile devices
+- ✅ **API Documentation** - Interactive Swagger UI at `/docs`
 
-✅ **3-Panel Layout** - Organized Controls | Tree Canvas | AI Chat interface  
-✅ **Top Bar Actions** - Save/Load/Share tree operations at a glance  
-✅ **Chat Timestamps** - Track when each interaction occurred  
-✅ **Edit Node Feature** - Update node values directly (NEW)  
-✅ **Mobile Responsive** - Works perfectly on all device sizes  
-✅ **Organized Controls** - Better-organized tree operations panel  
+### Technology Stack
+- **Frontend:** React 18, Redux, React Flow, Vite
+- **Backend:** FastAPI, SQLAlchemy ORM, PostgreSQL
+- **Authentication:** JWT tokens, bcrypt password hashing
+- **AI Integration:** OpenAI GPT-3.5 Turbo (optional)
+- **Testing:** pytest (backend), Jest (frontend)
+- **Deployment:** Docker, docker-compose, Render
 
-📚 **Documentation**:
-- [UI_IMPROVEMENTS.md](./UI_IMPROVEMENTS.md) - Complete feature guide with screenshots
-- [SCREENSHOTS_GUIDE.md](./SCREENSHOTS_GUIDE.md) - How to capture and use screenshots
-- [DEMO_VIDEO_GUIDE.md](./DEMO_VIDEO_GUIDE.md) - Video script and recording guide
+---
+
+## 📸 Screenshots
+
+### 1. Login Page
+![Login](./frontend/public/screenshots/login.png)
+
+### 2. Registration Page
+![Register](./frontend/public/screenshots/register.png)
+
+### 3. Dashboard - Tree Visualization
+![Dashboard](./frontend/public/screenshots/dahsboard.png)
+
+### 4. Tree Visualization (React Flow)
+![Tree Visual](./frontend/public/screenshots/tree_Visual.png)
+
+### 5. Manual Controls (Insert/Delete/Search)
+![Manual Controls](./frontend/public/screenshots/manual.png)
+
+### 6. AI Chat Interface
+![Chat](./frontend/public/screenshots/chatbot.png)
+
+### 7. Save/Load Operations
+![Save](./frontend/public/screenshots/save.png)
 
 ---
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Python 3.11+
-- Node.js 18+ (optional; use Docker `frontend_dev` service if not installed)
-- PostgreSQL 16 (or use Docker)
-
-### Local Development (Backend Only)
+### Option 1: Using Docker (Recommended)
 
 ```bash
-# 1. Clone the repo
-git clone <repo-url>
+# Clone repository
+git clone https://github.com/BHAGYAMUNI/agentic-tree.git
 cd agentic-tree
 
-# 2. Set up backend venv
+# Start all services
+docker-compose up
+
+# Access the application
+Frontend: http://localhost:5174
+Backend: http://localhost:8000
+API Docs: http://localhost:8000/docs
+```
+
+### Option 2: Local Development
+
+**Prerequisites:** Python 3.11+, Node.js 18+, PostgreSQL 16
+
+**Backend:**
+```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# 3. Install dependencies
 pip install -r requirements.txt
-
-# 4. Set environment variables (optional)
-cp .env.example .env
-# Edit .env with your settings
-
-# 5. Run migrations
 python -m alembic upgrade head
-
-# 6. Start the server
 uvicorn venv.main:app --reload
 ```
 
-Backend runs at `http://localhost:8000`. API docs available at `/docs`.
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-### Full Stack (with Docker Compose)
+### Test Credentials
+```
+Email: raju@example.com
+Password: 987654
+```
+
+---
+
+## 📖 API Documentation
+
+All endpoints are documented in the **interactive Swagger UI** at `/docs` when backend is running.
+
+### Key Endpoints
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/auth/register` | POST | User registration |
+| `/auth/login` | POST | User login |
+| `/trees` | GET/POST | List or create trees |
+| `/trees/{id}/insert` | POST | Insert node into tree |
+| `/trees/{id}/delete` | POST | Delete node from tree |
+| `/trees/{id}/search` | POST | Search for node |
+| `/chat` | POST | Chat with AI agent |
+
+---
+
+## 🧪 Testing
+
+### Backend Tests
+```bash
+cd backend
+pip install -r requirements.txt
+python -m pytest tests/ -v
+```
+
+**Coverage:**
+- Tree algorithms (insert, delete, traversals, height, leaves)
+- API endpoints (auth, tree CRUD, chat)
+- JWT authentication and protected routes
+
+### Frontend Tests
+```bash
+cd frontend
+npm install
+npm test
+```
+
+---
+
+## 🛠️ Development Process
+
+### Architecture
+1. **Frontend (React + Redux)** - Interactive UI with state management
+2. **Backend (FastAPI)** - RESTful API with JWT authentication
+3. **Database (PostgreSQL)** - Persistent data storage with SQLAlchemy ORM
+4. **AI Integration** - Optional OpenAI GPT-3.5 Turbo for intelligent chat
+
+### Key Challenges & Solutions
+
+| Challenge | Solution |
+|-----------|----------|
+| Tree state synchronization | Redux state management for consistent UI updates |
+| User authentication security | JWT tokens with bcrypt password hashing |
+| Real-time visualization | React Flow for interactive tree rendering |
+| AI chat responsiveness | Rule-based fallback when LLM unavailable |
+| Database consistency | SQLAlchemy foreign keys with cascade delete |
+| Responsive design | CSS grid/flexbox with mobile breakpoints |
+
+---
+
+## 📦 Deployment
+
+### Architecture Overview
+
+```
+Frontend (Render Static Site)
+↓
+Backend API (Render Web Service - Docker)
+↓
+PostgreSQL (Render Managed Database)
+```
+
+### Local Development Setup
+
+**Step 1: Dockerize the Application**
+
+Created Dockerfiles for both services:
+
+**Backend Dockerfile:**
+- Based on Python 3.11 image
+- Installed dependencies from requirements.txt
+- Exposed port 8000
+- Ran FastAPI with Uvicorn
+
+**Frontend Dockerfile:**
+- Multi-stage build
+- Node 20 for build phase
+- Nginx for serving production build
+- Exposed port 80
+
+**Docker Compose Orchestration:**
 
 ```bash
-docker-compose up
+docker-compose up --build
 ```
 
 This starts:
-- **Backend** at `http://localhost:8000`
-- **PostgreSQL** at `localhost:5432`
-- **Frontend** at `http://localhost:5174` (or port 5173 in frontend_dev service)
+- Backend service (port 8000)
+- Frontend service (port 5174)
+- PostgreSQL database (port 5432)
 
-## 📚 Project Structure
+**Step 2: Local Testing**
 
-```
-agentic-tree/
-├── backend/
-│   ├── venv/
-│   │   ├── main.py                 # FastAPI app and endpoints
-│   │   ├── auth.py                 # JWT and password utilities
-│   │   ├── models.py               # SQLAlchemy ORM models
-│   │   ├── schemas.py              # Pydantic validation schemas
-│   │   ├── database.py             # SQLAlchemy config
-│   │   ├── tree_utils.py           # Tree algorithms (insert, delete, traversals)
-│   │   ├── ai_agent.py             # Chat orchestrator (rule-based + LLM)
-│   │   ├── ai_agent_adapter.py     # LLM adapter (OpenAI integration)
-│   │   └── ...
-│   ├── alembic/
-│   │   ├── env.py                  # Alembic configuration
-│   │   ├── versions/               # Migration files
-│   │   └── ...
-│   ├── tests/
-│   │   ├── test_endpoints.py       # Integration tests
-│   │   ├── test_tree_utils.py      # Unit tests for tree logic
-│   │   └── ...
-│   ├── requirements.txt            # Python dependencies
-│   ├── Dockerfile                  # Docker image for backend
-│   ├── README_LLM.md              # LLM integration guide
-│   └── ...
-├── frontend/
-│   ├── src/
-│   │   ├── components/             # React components
-│   │   │   ├── TreeCanvas.jsx      # React Flow tree visualization
-│   │   │   ├── ManualControls.jsx  # Insert/delete/search UI
-│   │   │   ├── ChatPanel.jsx       # AI chat interface
-│   │   │   ├── Navbar.jsx          # Header and logout
-│   │   │   └── ...
-│   │   ├── pages/
-│   │   │   ├── Dashboard.jsx       # Main tree app page
-│   │   │   ├── Login.jsx           # Authentication page
-│   │   │   ├── Register.jsx        # Registration page
-│   │   │   └── ...
-│   │   ├── redux/
-│   │   │   ├── store.js            # Redux store setup
-│   │   │   ├── authSlice.js        # Auth state and async thunks
-│   │   │   ├── treeSlice.js        # Tree state
-│   │   │   ├── chatSlice.js        # Chat state
-│   │   │   └── ...
-│   │   ├── services/
-│   │   │   └── api.js              # HTTP client with auto-refresh tokens
-│   │   ├── styles/                 # CSS modules (theme, components)
-│   │   └── ...
-│   ├── package.json
-│   ├── vite.config.js
-│   ├── jest.config.cjs             # Jest testing configuration
-│   ├── Dockerfile
-│   ├── START_HERE.md               # Frontend setup guide
-│   └── ...
-├── docker-compose.yml              # Multi-service orchestration
-├── .github/workflows/ci.yml        # GitHub Actions pipeline
-├── .env.example                    # Environment variables template
-└── README.md                       # This file
+Verified all functionality:
+```bash
+# Test Swagger API docs
+curl http://localhost:8000/docs
+
+# Test registration & login
+curl -X POST http://localhost:8000/auth/register
+
+# Test tree operations
+curl http://localhost:8000/trees
+
+# Check database persistence
+docker exec agentic-tree-db psql -U postgres -d agentic_tree_db
 ```
 
-## 🔧 Configuration
+### Production Deployment (Render)
 
-### Backend Environment Variables
+**Step 1: Database Setup**
 
+Created managed PostgreSQL on Render:
+- Persistent cloud database
+- Not tied to container lifecycle
+- Automatically backed up
+- Connection via `DATABASE_URL` environment variable
+
+**Step 2: Backend Deployment**
+
+Deployed as **Render Web Service (Docker)**:
+
+```
+1. Connected GitHub repository
+2. Set root directory: backend/
+3. Selected Dockerfile
+4. Added environment variables:
+   - DATABASE_URL (from Render PostgreSQL)
+   - SECRET_KEY (for JWT signing)
+   - OPENAI_API_KEY (optional, for LLM)
+   - JWT_ALGORITHM=HS256
+   - ACCESS_TOKEN_EXPIRE_MINUTES=30
+5. Deployed
+```
+
+**Backend Live:** https://agentic-tree-1.onrender.com
+**API Docs:** https://agentic-tree-1.onrender.com/docs
+
+**Step 3: Frontend Deployment**
+
+Deployed as **Render Static Site**:
+
+```
+1. Connected GitHub repository
+2. Set root directory: frontend/
+3. Build command:
+   npm install --legacy-peer-deps && npm run build
+4. Publish directory: dist/
+5. Added environment variable:
+   VITE_API_URL=https://agentic-tree-1.onrender.com
+6. Deployed
+```
+
+**Frontend Live:** https://agentic-tree-2.onrender.com/dashboard
+
+**Step 4: CORS Configuration**
+
+Since frontend and backend are on different domains, configured CORS in FastAPI:
+
+```python
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "https://agentic-tree-2.onrender.com",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+This allows secure cross-domain communication.
+
+### Environment Variables (`.env`)
+
+**Backend:**
 ```ini
 # Database
-DATABASE_URL=postgresql://postgres:Postgres123@localhost:5432/agentic_tree_db
-# SQLite for local testing: sqlite:///agentic_tree.db
+DATABASE_URL=postgresql://user:password@host:5432/agentic_tree_db
 
-# JWT & Security
+# JWT Security
 SECRET_KEY=your-secret-key-here
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
@@ -179,189 +307,176 @@ REFRESH_TOKEN_EXPIRE_DAYS=30
 USE_LLM_AGENT=1
 OPENAI_API_KEY=sk-...
 OPENAI_MODEL=gpt-3.5-turbo
-
-# Rate Limiting
-RATE_LIMIT=60
-RATE_WINDOW_SECONDS=60
-
-# Logging
-LOG_LEVEL=INFO
 ```
 
-Copy `.env.example` to `.env` and update values as needed.
-
-## 🧪 Testing
-
-### Backend Tests
-
-```bash
-cd backend
-python -m pytest -v backend/tests
+**Frontend:**
+```
+VITE_API_URL=https://agentic-tree-1.onrender.com
 ```
 
-Tests cover:
-- Tree utilities (insert, delete, traversals)
-- API endpoints (auth, create tree, chat)
+### CI/CD Pipeline (Bonus)
 
-### Frontend Tests
+Created GitHub Actions workflow that:
+- Runs pytest for backend tests
+- Runs Jest for frontend tests
+- Validates database schema
+- Ensures all tests pass before deployment
 
-```bash
-cd frontend
-npm test
-```
+### Deployment Summary
 
-## 📖 API Documentation
+| Component | Platform | Status |
+|-----------|----------|--------|
+| Backend | Render Web Service (Docker) | ✅ Live |
+| Frontend | Render Static Site | ✅ Live |
+| Database | Render PostgreSQL | ✅ Live |
+| API Docs | `/docs` endpoint | ✅ Available |
+| Health Check | `/health` endpoint | ✅ Working |
 
-Once the backend is running, visit `http://localhost:8000/docs` for **interactive Swagger UI**.
+**Why Render?**
 
-### Key Endpoints
+Assignment specified: *"Deploy to a cloud platform (e.g., Heroku, AWS EC2)"*
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/register` | Register a new user |
-| POST | `/auth/login` | Login (email + password) |
-| POST | `/auth/refresh` | Refresh access token |
-| GET | `/auth/me` | Get current user info |
-| POST | `/trees` | Create a new tree |
-| GET | `/trees` | List user's trees |
-| GET | `/trees/{id}` | Get tree details |
-| POST | `/trees/{id}/insert` | Insert a node |
-| POST | `/trees/{id}/delete` | Delete a node |
-| POST | `/trees/{id}/search` | Search for a node |
-| GET | `/trees/{id}/traversal` | Get traversal order |
-| POST | `/chat` | Chat with AI agent |
+- "e.g." = examples, not exhaustive list
+- Render provides:
+  - Easy Docker deployment
+  - Managed PostgreSQL
+  - Free tier for learning
+  - Native GitHub integration
+  - Automatic redeploys on push
 
-## 🤖 AI/LLM Integration
+### Deployment Checklist
 
-Optional **GPT-3.5 Turbo** integration for intelligent chat:
-
-```bash
-export OPENAI_API_KEY="sk-..."
-export USE_LLM_AGENT=1
-uvicorn venv.main:app --reload
-```
-
-See [README_LLM.md](backend/README_LLM.md) for full details.
-
-## 🚢 Deployment
-
-### Docker Compose (Local)
-
-```bash
-docker-compose up --build
-```
-
-Services start on:
-- Backend: `http://localhost:8000`
-- Frontend: `http://localhost:5174`
-- PostgreSQL: `localhost:5432`
-
-### Production Checklist
-
-- [ ] Use a production-grade database (PostgreSQL on AWS RDS, Azure Database, etc.)
-- [ ] Set strong `SECRET_KEY` and credentials in environment
-- [ ] Enable HTTPS/TLS on your domain
-- [ ] Use a secret manager (AWS Secrets Manager, HashiCorp Vault)
-- [ ] Set up rate limiting with Redis or a WAF
-- [ ] Enable CORS only for your frontend domain
-- [ ] Use a reverse proxy (Nginx, CloudFlare)
-- [ ] Set up monitoring and alerting (DataDog, New Relic, etc.)
-- [ ] Enable audit logging
-- [ ] Run security scans (OWASP, Snyk)
-
-## 📝 Documentation
-
-- **Frontend**: See [START_HERE.md](frontend/START_HERE.md)
-- **LLM Integration**: See [README_LLM.md](backend/README_LLM.md)
-- **Alembic Migrations**: See [README_ALEMBIC.md](backend/README_ALEMBIC.md)
-- **Observability**: See [README_OBSERVABILITY.md](backend/README_OBSERVABILITY.md)
-
-## 🐛 Troubleshooting
-
-### Backend won't start
-
-```bash
-# Check if port 8000 is in use
-lsof -i :8000
-
-# Verify venv is activated
-source venv/bin/activate
-
-# Reinstall dependencies
-pip install -r requirements.txt --force-reinstall
-```
-
-### Database errors
-
-```bash
-# Reset migrations (careful—deletes data!)
-python -m alembic downgrade base
-python -m alembic upgrade head
-
-# Or use SQLite for testing
-export DATABASE_URL=sqlite:///test.db
-```
-
-### Frontend can't connect to backend
-
-- Check backend is running: `curl http://localhost:8000/`
-- Verify `VITE_API_URL` in frontend `.env`
-- Check CORS settings in backend [main.py](backend/venv/main.py)
-
-## 📊 Architecture Diagram
-
-```
-┌─────────────────┐
-│   Frontend      │
-│   (React/Vite) │
-└────────┬────────┘
-         │ HTTP/REST
-         ↓
-┌─────────────────────────────────────┐
-│   Backend (FastAPI)                 │
-├─────────────────────────────────────┤
-│ • Auth (JWT)                        │
-│ • Tree CRUD                         │
-│ • Chat (Rule-based + LLM)          │
-│ • Rate Limiting                     │
-│ • Logging & Metrics                 │
-└────────┬──────────────────┬──────────┘
-         │                  │
-         ↓                  ↓
-    ┌─────────┐       ┌──────────────┐
-    │PostgreSQL│       │ OpenAI API   │
-    │Database │       │ (Optional)   │
-    └─────────┘       └──────────────┘
-```
-
-## 🤝 Contributing
-
-1. Fork the repo
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
-## 📄 License
-
-This project is open-source. See LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- **React Flow** for tree visualization
-- **FastAPI** for the backend framework
-- **SQLAlchemy** for ORM
-- **OpenAI** for the LLM API
-- All contributors and testers
-
-## 📞 Support
-
-For issues, questions, or feedback:
-- Open a GitHub issue
-- Check existing documentation
-- Review backend logs: `docker-compose logs backend`
-- Review frontend console: Browser DevTools → Console
+- ✅ Backend containerized with Docker
+- ✅ Frontend containerized with Docker
+- ✅ Local testing with docker-compose
+- ✅ Database migrated to cloud (Render PostgreSQL)
+- ✅ Backend deployed to Render
+- ✅ Frontend deployed to Render
+- ✅ Environment variables configured
+- ✅ CORS enabled for frontend domain
+- ✅ Health check endpoint working
+- ✅ API documentation accessible
+- ✅ CI/CD pipeline running
 
 ---
 
-**Happy tree exploring! 🌳**
+## 📁 Project Structure
+
+```
+agentic-tree/
+├── backend/
+│   ├── venv/
+│   │   ├── main.py              # FastAPI app & endpoints
+│   │   ├── models.py            # SQLAlchemy ORM models
+│   │   ├── tree_utils.py        # Tree algorithms
+│   │   ├── ai_agent.py          # AI orchestrator
+│   │   ├── ai_agent_adapter.py  # LLM integration
+│   │   └── auth.py              # JWT & password hashing
+│   ├── tests/
+│   │   ├── test_tree_utils.py   # Unit tests
+│   │   └── test_endpoints.py    # Integration tests
+│   ├── requirements.txt
+│   └── Dockerfile
+├── frontend/
+│   ├── src/
+│   │   ├── components/          # React components
+│   │   ├── pages/               # Pages (Login, Dashboard)
+│   │   ├── redux/               # State management
+│   │   └── services/            # API calls
+│   ├── package.json
+│   └── Dockerfile
+├── docker-compose.yml           # Multi-service orchestration
+└── README.md
+```
+
+---
+
+## 📊 Database Schema
+
+### Tables
+- **users** - User accounts (email, password hash)
+- **trees** - Binary tree data per user
+- **chat_messages** - Chat history with timestamps
+
+### Relationships
+- User → Trees (one-to-many, cascade delete)
+- Tree → Chat Messages (one-to-many, cascade delete)
+
+---
+
+## 🚢 Production Deployment Checklist
+
+- ✅ Code pushed to GitHub
+- ✅ Environment variables configured in cloud platform
+- ✅ Database backup strategy in place
+- ✅ API rate limiting enabled
+- ✅ CORS configured for frontend domain only
+- ✅ HTTPS/SSL enabled
+- ✅ Backend and frontend both deployed
+- ✅ Health check endpoint working (`/health`)
+- ✅ API documentation accessible (`/docs`)
+- ✅ Tests passing locally
+
+---
+
+## 🤖 AI Integration
+
+The chat system uses **rule-based pattern matching** as the primary method, with optional **OpenAI GPT-3.5 Turbo** for more intelligent responses.
+
+To enable LLM:
+```bash
+export OPENAI_API_KEY="sk-..."
+export USE_LLM_AGENT=1
+```
+
+The system intelligently falls back to rule-based responses if LLM is unavailable.
+
+---
+
+## 🐛 Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Port already in use | Change port in docker-compose.yml or kill process using port |
+| Database connection error | Verify DATABASE_URL and PostgreSQL is running |
+| Frontend can't reach backend | Check CORS settings and API_URL in frontend config |
+| Tests failing | Ensure all dependencies installed: `pip install -r requirements.txt` |
+
+---
+
+## 🎬 Demo Video
+
+**Full 3-4 minute demo showing all features:**
+
+[Watch Demo Video on YouTube](https://youtu.be/toXxtCOx6qc)
+
+**Demo includes:**
+- User registration and login
+- Creating a binary tree
+- Inserting and deleting nodes
+- Real-time tree visualization
+- AI chat interaction
+- Responsive mobile view
+
+---
+
+## 🙏 Acknowledgments
+
+- **React Flow** - Tree visualization library
+- **FastAPI** - Web framework
+- **SQLAlchemy** - ORM
+- **OpenAI** - LLM API
+- **Render** - Cloud deployment platform
+
+---
+
+## 📞 Support
+
+For issues or questions:
+- Check API documentation at `/docs`
+- Review logs: `docker-compose logs backend`
+- Check browser console: Browser DevTools → Console
+
+---
+
+**Built with ❤️ for learning tree data structures and AI integration.**

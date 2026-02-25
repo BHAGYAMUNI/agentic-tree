@@ -142,6 +142,12 @@ def read_root():
     return {"message": "Backend is working 🚀"}
 
 
+@app.get("/health")
+def health_check():
+    """Health check endpoint for deployment monitoring"""
+    return {"status": "healthy", "service": "agentic-tree-backend"}
+
+
 @app.post("/auth/register")
 def register(user: UserCreate, db: Session = Depends(get_db)):
     logger.info(f"Registration attempt: {user.email}")

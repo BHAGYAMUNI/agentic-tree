@@ -3,7 +3,7 @@
 A full-stack web application for visualizing and intelligently analyzing binary tree data structures with AI chat integration.
 
 **Live Demo:**
-- Frontend: https://agentic-tree-2.onrender.com/dashboard
+- Frontend: https://agentic-tree-2.onrender.com/register
 - Backend API: https://agentic-tree-1.onrender.com/
 - API Documentation: https://agentic-tree-1.onrender.com/docs
 
@@ -269,7 +269,7 @@ Deployed as **Render Static Site**:
 6. Deployed
 ```
 
-**Frontend Live:** https://agentic-tree-2.onrender.com/dashboard
+**Frontend Live:** https://agentic-tree-2.onrender.com/register
 
 **Step 4: CORS Configuration**
 

@@ -1,220 +1,205 @@
-🌳 Agentic Tree – Binary Tree Data Structure Explorer
+# Agentic Tree - Binary Tree Data Structure Explorer
 
-A full-stack web application for visualizing and interacting with a Binary Tree using an AI-powered LangGraph agent for natural language operations.
+A full-stack web application for visualizing and intelligently analyzing binary tree data structures with **LangGraph AI agent integration** for natural language tree operations.
 
 **Live Demo:**
 - Frontend: https://agentic-tree-2.onrender.com/dashboard
 - Backend API: https://agentic-tree-1.onrender.com/
 - API Documentation: https://agentic-tree-1.onrender.com/docs
 
-📌 What This Project Implements
+---
 
-This project implements a Binary Tree (not a BST) with:
+## 🌟 Features Implemented
 
-Structural insertions (left / right child)
+### Core Functionality
+- ✅ **User Authentication** - Register, login, JWT tokens with bcrypt password hashing
+- ✅ **Binary Tree CRUD** - Create, insert, delete, search, update nodes
+- ✅ **Tree Visualization** - Interactive React Flow canvas displaying binary trees
+- ✅ **AI Chat Integration** - LangGraph agent for intelligent, natural-language tree operations
+- ✅ **Chat History** - Persistent storage of all chat interactions
+- ✅ **Tree Operations** - Insert (left/right), delete (with promotion), search, count, height, leaves, in-order/pre-order/post-order traversals
+- ✅ **Manual Controls** - REST API endpoints for direct tree manipulation
+- ✅ **Flexible Phrasing** - Supports various natural language formats ("to left of", "as left child of", etc.)
+- ✅ **Tree Reset** - Clear all nodes and start fresh
+- ✅ **Comprehensive Error Handling** - Validation and user-friendly error messages
+- ✅ **Responsive Design** - Works on desktop, tablet, and mobile devices
+- ✅ **API Documentation** - Interactive Swagger UI at `/docs`
+- ✅ **Comprehensive Test Suite** - 35+ test cases covering valid operations, error cases, and edge cases
 
-Node deletion
+### Technology Stack
+- **Frontend:** React 18, Redux, React Flow, Vite, Jest
+- **Backend:** FastAPI, SQLAlchemy ORM, PostgreSQL (production) / SQLite (testing)
+- **AI Integration:** LangGraph + LangChain for agent workflow, OpenAI GPT-3.5 Turbo (optional)
+- **Authentication:** JWT tokens, bcrypt password hashing
+- **Testing:** pytest (backend), Jest (frontend)
+- **Deployment:** Docker, docker-compose, Render
 
-Node update
+---
 
-Search
+## 📸 Screenshots
 
-Tree traversals (Inorder, Preorder, Postorder)
+### 1. Login Page
+![Login](./frontend/public/screenshots/login.png)
 
-Height calculation
+### 2. Registration Page
+![Register](./frontend/public/screenshots/register.png)
 
-Leaf node detection
+### 3. Dashboard - Tree Visualization
+![Dashboard](./frontend/public/screenshots/dahsboard.png)
 
-Node count
+### 4. Tree Visualization (React Flow)
+![Tree Visual](./frontend/public/screenshots/tree_Visual.png)
 
-Tree reset
+### 5. Manual Controls (Insert/Delete/Search)
+![Manual Controls](./frontend/public/screenshots/manual.png)
 
-All operations are available via:
+### 6. AI Chat Interface
+![Chat](./frontend/public/screenshots/chatbot.png)
 
-🔹 Manual REST APIs
+### 7. Save/Load Operations
+![Save](./frontend/public/screenshots/save.png)
 
-🔹 AI Chat powered by LangGraph
+---
 
-🚀 Features
-🌳 Binary Tree Operations
+## 🚀 Quick Start
 
-Insert node (as left/right child or root)
+### Option 1: Using Docker (Recommended)
 
-Delete node (with validation)
-
-Update node value
-
-Search node
-
-Reset entire tree
-
-Traversals: Inorder, Preorder, Postorder
-
-Height, Leaves, Node Count
-
-🤖 AI Chat (LangGraph Agent)
-
-Natural language tree operations
-
-Intent classification using Request Router
-
-Structured tree execution
-
-Context-aware responses
-
-Graceful error handling
-
-🔐 Authentication
-
-User registration & login
-
-JWT-based authentication
-
-bcrypt password hashing
-
-🎨 Visualization
-
-Interactive Binary Tree using React Flow
-
-Node highlighting
-
-Traversal path animation
-
-Responsive layout
-
-🗂 Persistence
-
-PostgreSQL (production)
-
-SQLite (testing)
-
-Chat history stored per tree
-
-🏗 Tech Stack
-
-Frontend
-
-React 18
-
-Redux Toolkit
-
-React Flow
-
-Vite
-
-Backend
-
-FastAPI
-
-SQLAlchemy
-
-PostgreSQL
-
-JWT Authentication
-
-AI Layer
-
-LangGraph
-
-LangChain
-
-OpenAI (optional LLM support)
-
-Testing
-
-pytest
-
-Jest
-
-Deployment
-
-Docker
-
-Render
-
-🧠 AI Agent Architecture (LangGraph)
-
-The backend uses a structured LangGraph workflow:
-
-User Message
-   ↓
-Intent Classification
-   ↓
-Request Router
-   ↓
-Tree Execution Node
-   ↓
-Response Generation
-
-The agent:
-
-Distinguishes between tree actions and general queries
-
-Validates inputs before execution
-
-Maintains tree context
-
-Produces deterministic structured operations
-
-🛠️ Quick Start
-Option 1 – Docker (Recommended)
+```bash
+# Clone repository
 git clone https://github.com/BHAGYAMUNI/agentic-tree.git
 cd agentic-tree
+
+# Start all services
 docker-compose up
 
-Access:
+# Access the application
+Frontend: http://localhost:5174
+Backend: http://localhost:8000
+API Docs: http://localhost:8000/docs
+```
 
-Frontend → http://localhost:5174
+### Option 2: Local Development
 
-Backend → http://localhost:8000
+**Prerequisites:** Python 3.11+, Node.js 18+, PostgreSQL 16
 
-Docs → http://localhost:8000/docs
-
-Option 2 – Local Development
-Backend
+**Backend:**
+```bash
 cd backend
 python -m venv venv
-venv\Scripts\activate   # Windows
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
 pip install -r requirements.txt
+
+> ⚠️ **Important:** the backend has recently been rewritten to use the
+> LangGraph/LangChain workflow instead of direct OpenAI calls. If you pull
+> the latest commits you **must** reinstall the Python dependencies (or build
+> the Docker image again) so that `langgraph`, `langchain`,
+> and `langchain-openai` are available.  Otherwise you'll see
+> ``ModuleNotFoundError: No module named 'langgraph'`` when starting the
+> server.
+
+> ⚠️ **LangChain version compatibility:** the `langchain` package has
+> undergone a breaking reorganisation in its 1.x releases, moving the
+> `schema` submodule around.  Our implementation is based on the 0.0.x
+> series, so the `requirements.txt` now pins `langchain<1.0`.  If you
+> already have `langchain==1.2.10` (or any 1.x release) installed, run
+> `pip install -U "langchain<1.0"` or recreate your virtualenv to avoid
+> ``ImportError: No module named 'langchain.schema'``.  For advanced users
+> who wish to work with 1.x, update the imports in
+> `backend/langgraph_agent.py` accordingly.
 python -m alembic upgrade head
-uvicorn main:app --reload
-Frontend
+uvicorn venv.main:app --reload
+```
+
+**Frontend:**
+```bash
 cd frontend
 npm install
 npm run dev
-🔑 Test Credentials
+```
+
+### Test Credentials
+```
 Email: raju@example.com
 Password: 987654
-📁 Project Structure
-agentic-tree/
-│
-├── backend/
-│   ├── main.py
-│   ├── models.py
-│   ├── tree_utils.py
-│   ├── langgraph_agent.py
-│   ├── request_router.py
-│   └── auth.py
-│
-├── frontend/
-│   ├── components/
-│   ├── redux/
-│   ├── services/
-│   └── pages/
-│
-└── docker-compose.yml
-🧪 Testing
+```
 
-Backend:
+---
 
+## 📖 API Documentation
+
+All endpoints are documented in the **interactive Swagger UI** at `/docs` when backend is running.
+
+### Key Endpoints
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/auth/register` | POST | User registration |
+| `/auth/login` | POST | User login |
+| `/trees` | GET/POST | List or create trees |
+| `/trees/{id}` | GET | Get tree details |
+| `/trees/{id}/insert` | POST | Insert node into tree (manual) |
+| `/trees/{id}/delete` | POST | Delete node from tree (manual) |
+| `/trees/{id}/search` | POST | Search for node (manual) |
+| `/trees/{id}/reset` | POST | Reset tree to empty state |
+| `/chat` | POST | Chat with AI agent for natural language operations |
+
+---
+
+## 🧪 Testing
+
+### Backend Tests - Comprehensive Verification Suite
+
+The backend includes a complete test suite with **35 test cases** covering:
+
+**Manual Controls (15 tests)**
+- 8 valid operation tests (insert root, insert children, delete, search, reset)
+- 7 error/rejection tests (duplicate, occupied slot, invalid direction, etc.)
+
+**AI Chat Operations (17 tests)**
+- 9 valid chat operation tests (insert, delete, search, query operations)
+- 8 rejection/validation tests (missing direction, duplicate, malformed commands)
+
+**Stress & Edge Cases (3 tests)**
+- Deep chain verification with height calculation
+- Message length validation
+- Flexible phrasing support
+
+Run the full test suite:
+```bash
 cd backend
-pytest
+pip install -r requirements.txt
+python -m pytest tests/test_comprehensive_verification.py -v
+```
 
-Frontend:
+📖 **Complete AI Chat Commands Reference:** See [AI_CHAT_COMMANDS.md](./AI_CHAT_COMMANDS.md) for:
+- All available chat commands with syntax
+- Expected outputs for successful operations
+- All rejection cases and error messages
+- Flexible phrasing examples
+- Test case mappings
 
+### Frontend Tests
+```bash
 cd frontend
+npm install
 npm test
 ```
+
+---
+
+## � AI Chat Commands Reference
+
+Comprehensive guide to all AI chat commands including successful operations, rejection cases, and flexible phrasing:
+
+📖 **[AI_CHAT_COMMANDS.md](./AI_CHAT_COMMANDS.md)** - Complete reference with:
+- All successful commands and expected responses
+- All rejection cases with explanations
+- Flexible phrasing examples
+- Error messages and HTTP status codes
+- Test case mapping
+- Quick reference table
 
 ---
 
@@ -224,18 +209,48 @@ npm test
 1. **Frontend (React + Redux)** - Interactive UI with state management
 2. **Backend (FastAPI)** - RESTful API with JWT authentication
 3. **Database (PostgreSQL)** - Persistent data storage with SQLAlchemy ORM
-4. **AI Integration** - Optional OpenAI GPT-3.5 Turbo for intelligent chat
+4. **AI Integration** - LangGraph + LangChain agents for intelligent natural-language tree operations
 
 ### Key Challenges & Solutions
 
 | Challenge | Solution |
 |-----------|----------|
+| Natural Language Understanding | LangGraph + LangChain agents with intent classification |
 | Tree state synchronization | Redux state management for consistent UI updates |
 | User authentication security | JWT tokens with bcrypt password hashing |
 | Real-time visualization | React Flow for interactive tree rendering |
-| AI chat responsiveness | Rule-based fallback when LLM unavailable |
+| Flexible Input Parsing | Multi-pattern regex matching with preprocessor optimization |
+| Database compatibility | JSON type for SQLite (tests), JSONB for PostgreSQL (production) |
 | Database consistency | SQLAlchemy foreign keys with cascade delete |
 | Responsive design | CSS grid/flexbox with mobile breakpoints |
+
+### LangGraph AI Agent Architecture
+
+The backend uses **LangGraph** for intelligent tree operation processing:
+
+```
+User Chat Message
+    ↓
+Message Validation & Preprocessing
+    ├─→ Quick Query Detection (height, count, leaves, traversal)
+    │   └─→ Return immediate result (no LLM call)
+    │
+    └─→ Complex Operation
+        ↓
+        LangGraph Agent State Machine
+        ├─→ Intent Classification (insert/delete/search/update/query)
+        ├─→ Parameter Extraction (values, directions, nodes)
+        ├─→ Validation & Constraints
+        ├─→ Tree Operation Execution
+        └─→ Response Generation
+```
+
+**Benefits:**
+- Understands flexible, natural language phrasing
+- Validates operations before execution
+- Provides helpful error messages when operations fail
+- Optimized for common queries (bypasses LLM)
+- Maintains consistent tree state across operations
 
 ---
 
@@ -405,6 +420,8 @@ Created GitHub Actions workflow that:
 | API Docs | `/docs` endpoint | ✅ Available |
 | Health Check | `/health` endpoint | ✅ Working |
 
+| Agent Status | `/agent-status` endpoint | ✅ Returns `{"agent": "langgraph"}` when the LangGraph workflow is active |
+
 **Why Render?**
 
 Assignment specified: *"Deploy to a cloud platform (e.g., Heroku, AWS EC2)"*
@@ -500,42 +517,56 @@ To enable LLM:
 ```bash
 export OPENAI_API_KEY="sk-..."
 export USE_LLM_AGENT=1
-export OPENAI_API_KEY=your_key
+```
 
-The system can operate with structured routing even without the LLM.
+The system intelligently falls back to rule-based responses if LLM is unavailable.
 
-🎬 Demo
+---
 
-📺 https://youtu.be/toXxtCOx6qc
+## 🐛 Troubleshooting
 
-✅ What Was Successfully Implemented
+| Issue | Solution |
+|-------|----------|
+| Port already in use | Change port in docker-compose.yml or kill process using port |
+| Database connection error | Verify DATABASE_URL and PostgreSQL is running |
+| Frontend can't reach backend | Check CORS settings and API_URL in frontend config |
+| Tests failing | Ensure all dependencies installed: `pip install -r requirements.txt` |
 
-Full Binary Tree implementation
+---
 
-LangGraph-based agent workflow
+## 🎬 Demo Video
 
-Request Router / Intent Classifier
+**Full 3-4 minute demo showing all features:**
 
-Structured state handling
+[Watch Demo Video on YouTube](https://youtu.be/toXxtCOx6qc)
 
-REST + AI unified execution
+**Demo includes:**
+- User registration and login
+- Creating a binary tree
+- Inserting and deleting nodes
+- Real-time tree visualization
+- AI chat interaction
+- Responsive mobile view
 
-Cloud deployment
+---
 
-End-to-end testing
+## 🙏 Acknowledgments
 
-💛 Final Note
+- **React Flow** - Tree visualization library
+- **FastAPI** - Web framework
+- **SQLAlchemy** - ORM
+- **OpenAI** - LLM API
+- **Render** - Cloud deployment platform
 
-This project demonstrates:
+---
 
-Data structure implementation (Binary Tree)
+## 📞 Support
 
-Agent architecture design (LangGraph + LangChain)
+For issues or questions:
+- Check API documentation at `/docs`
+- Review logs: `docker-compose logs backend`
+- Check browser console: Browser DevTools → Console
 
-Full-stack integration
+---
 
-AI-assisted structured operations
-
-Production deployment
-
-Built with clarity, structure, and intentional architecture. 🌳✨
+**Built with ❤️ for learning tree data structures and AI integration.**

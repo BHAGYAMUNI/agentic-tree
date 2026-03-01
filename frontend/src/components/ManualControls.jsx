@@ -27,6 +27,9 @@ function ManualControls() {
   const [searchValue, setSearchValue] = useState('');
   const [traversalResult, setTraversalResult] = useState(null);
 
+  // maximum allowed node value (must mirror backend MAX_NODE_VALUE)
+  const MAX_NODE_VALUE = 1000000000;
+
   // Status state
   const [status, setStatus] = useState(null);
   const [statusType, setStatusType] = useState('info'); // 'success', 'error', 'info'
@@ -66,17 +69,44 @@ function ManualControls() {
   const handleInsertNode = async (e) => {
     e.preventDefault();
     if (!validateTree()) return;
-    if (!parentValue.trim() || !newNodeValue.trim()) {
-      showStatus('Please fill all fields', 'error');
+    if (!newNodeValue.trim()) {
+      showStatus('Please enter a value for the new node', 'error');
+      return;
+    }
+
+    let parentInt = null;
+    if (parentValue.trim()) {
+      parentInt = parseInt(parentValue);
+      if (isNaN(parentInt)) {
+        showStatus('Parent value must be a number', 'error');
+        return;
+      }
+    } else if (selectedTree && selectedTree.tree_data !== null) {
+      // non-empty tree requires parent
+      showStatus('Please enter the parent node value', 'error');
+      return;
+    }
+
+    const newValInt = parseInt(newNodeValue);
+    if (isNaN(newValInt)) {
+      showStatus('New node value must be a number', 'error');
+      return;
+    }
+    if (Math.abs(newValInt) > MAX_NODE_VALUE) {
+      showStatus(`Node value too large; max ${MAX_NODE_VALUE}`, 'error');
       return;
     }
 
     setLoading(true);
+    // debounce to avoid repeated clicks
+    if (handleInsertNode._locked) return;
+    handleInsertNode._locked = true;
+    setTimeout(() => { handleInsertNode._locked = false; }, 800);
     try {
       await treeAPI.insertNode(
         selectedTree.id,
-        parseInt(parentValue),
-        parseInt(newNodeValue),
+        parentInt,
+        newValInt,
         direction
       );
 
@@ -87,7 +117,10 @@ function ManualControls() {
       showStatus(`Node ${newNodeValue} inserted successfully!`, 'success');
       await refreshTreeVisualization();
     } catch (error) {
-      showStatus(error.message || 'Failed to insert node', 'error');
+      const msg = error.message || 'Failed to insert node';
+      showStatus(msg, 'error');
+      // also display a browser alert so the user can't miss it
+      alert(msg);
     } finally {
       setLoading(false);
     }
@@ -109,7 +142,9 @@ function ManualControls() {
       showStatus(`Node ${deleteValue} deleted successfully!`, 'success');
       await refreshTreeVisualization();
     } catch (error) {
-      showStatus(error.message || 'Failed to delete node', 'error');
+      const msg = error.message || 'Failed to delete node';
+      showStatus(msg, 'error');
+      alert(msg);
     } finally {
       setLoading(false);
     }
@@ -121,6 +156,12 @@ function ManualControls() {
     if (!validateTree()) return;
     if (!editNodeId.trim() || !editNodeValue.trim()) {
       showStatus('Please fill all fields', 'error');
+      return;
+    }
+
+    const newVal = parseInt(editNodeValue);
+    if (Math.abs(newVal) > MAX_NODE_VALUE) {
+      showStatus(`Node value too large; max ${MAX_NODE_VALUE}`, 'error');
       return;
     }
 
@@ -139,7 +180,9 @@ function ManualControls() {
       showStatus(`Node updated successfully!`, 'success');
       await refreshTreeVisualization();
     } catch (error) {
-      showStatus(error.message || 'Failed to edit node', 'error');
+      const msg = error.message || 'Failed to edit node';
+      showStatus(msg, 'error');
+      alert(msg);
     } finally {
       setLoading(false);
     }
@@ -162,11 +205,15 @@ function ManualControls() {
         dispatch(setHighlightedNode(String(response.node_id)));
         showStatus(`Node ${searchValue} found!`, 'success');
       } else {
-        showStatus(`Node ${searchValue} not found in tree`, 'info');
+        const msg = `Node ${searchValue} not found in tree`;
+        showStatus(msg, 'info');
+        alert(msg);
       }
       setSearchValue('');
     } catch (error) {
-      showStatus(error.message || 'Search failed', 'error');
+      const msg = error.message || 'Search failed';
+      showStatus(msg, 'error');
+      alert(msg);
     } finally {
       setLoading(false);
     }
@@ -187,7 +234,9 @@ function ManualControls() {
       showStatus('Tree reset successfully!', 'success');
       await refreshTreeVisualization();
     } catch (error) {
-      showStatus(error.message || 'Failed to reset tree', 'error');
+      const msg = error.message || 'Failed to reset tree';
+      showStatus(msg, 'error');
+      alert(msg);
     } finally {
       setLoading(false);
     }
@@ -221,7 +270,9 @@ function ManualControls() {
       
       showStatus(`${traversalName} traversal completed!`, 'success');
     } catch (error) {
-      showStatus(error.message || 'Failed to get traversal', 'error');
+      const msg = error.message || 'Failed to get traversal';
+      showStatus(msg, 'error');
+      alert(msg);
     } finally {
       setLoading(false);
     }

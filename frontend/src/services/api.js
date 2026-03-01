@@ -67,7 +67,9 @@ const apiCall = async (endpoint, options = {}) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || 'API Error');
+    // some FastAPI endpoints return 'detail' rather than 'message'
+    const errMsg = data.message || data.detail || 'API Error';
+    throw new Error(errMsg);
   }
 
   return data;

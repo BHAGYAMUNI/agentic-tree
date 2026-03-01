@@ -33,8 +33,9 @@ from tree_utils import (
     inorder_traversal,
     preorder_traversal,
     postorder_traversal,
+    MAX_NODE_VALUE,
 )
-from ai_agent import handle_message as ai_handle_message
+from langgraph_agent import handle_message as ai_handle_message
 from sqlalchemy.orm.attributes import flag_modified
 from fastapi.middleware.cors import CORSMiddleware
 import re
@@ -117,6 +118,22 @@ app.add_middleware(
 
 # Add exception handler for validation errors
 from fastapi.exceptions import RequestValidationError
+
+
+@app.get("/agent-status")
+def agent_status():
+    """Simple endpoint to verify that the LangGraph agent code is active.
+
+    Returns a small JSON blob indicating the agent implementation being
+    used; clients (or users) can hit this URL to make sure the latest
+    refactor hasn't reverted back to the old OpenAI call.  The log output
+    from the agent also emits a message on every invocation (see
+    backend/langgraph_agent.py).
+    """
+    return {
+        "agent": "langgraph",
+        "llm_enabled": os.environ.get("USE_LLM_AGENT", "0") in ("1", "true", "True"),
+    }
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -322,35 +339,310 @@ def chat(request: ChatRequest,
          db: Session = Depends(get_db),
          current_user: User = Depends(get_current_user)):
 
+    # fetch and lock the row to avoid concurrent-modification races
     tree = db.query(TreeSession).filter(
         TreeSession.id == request.tree_id,
         TreeSession.user_id == current_user.id
-    ).first()
+    ).with_for_update().first()
 
     if not tree:
-        raise HTTPException(status_code=404, detail="Tree not found")
+        # user might not have selected/created a tree yet
+        return {"response": "Please select or create a tree first."}
 
     user_message = (request.message or "").strip()
     if len(user_message) > 1000:
         raise HTTPException(status_code=400, detail="Message too long")
 
-    # Delegate to AI agent scaffold which returns (response_text, modified, new_tree)
-    response_text, modified, new_tree = ai_handle_message(tree.tree_data, request.message)
+    # Handle follow-up replies consisting of a direction only.  When the
+    # previous chat entry asked "Do you want to insert X as left or right
+    # child of Y?" we can synthesise a complete insertion command so that the
+    # rest of the pipeline behaves exactly as if the user had sent the full
+    # sentence.  This keeps the agent stateless while still supporting a
+    # simple conversational pattern.
+    dir_match = re.match(r'^(left|right)(?:\s+of\s+(\d+))?$', user_message.lower())
+    if dir_match:
+        direction = dir_match.group(1)
+        override_parent = dir_match.group(2)
+        # fetch the last user message for this tree
+        last = db.query(ChatMessage).filter(
+            ChatMessage.tree_id == request.tree_id,
+            ChatMessage.user_id == current_user.id,
+        ).order_by(ChatMessage.id.desc()).first()
+        if last and 'left or right' in (last.response or '').lower():
+            # attempt to extract numbers from the previous message
+            nums = re.findall(r"\d+", last.message or "")
+            if len(nums) >= 2:
+                new_val = nums[0]
+                parent_val = override_parent or nums[1]
+                user_message = f"insert {new_val} as {direction} child of {parent_val}"
+                msg_lower = user_message.lower()
+    
+    # Determine whether we should bypass all of the "preprocessor" logic
+    # and send the message straight to the LLM/agent.  This is useful for
 
-    # If agent modified the tree, persist changes (new_tree may be updated)
-    if modified:
-        tree.tree_data = new_tree
-        flag_modified(tree, "tree_data")
-        db.commit()
-        db.refresh(tree)
+    # Determine whether we should bypass all of the "preprocessor" logic
+    # and send the message straight to the LLM/agent.  This is useful for
+    # debugging or for environments where we want *every* turn to flow
+    # through the LangGraph workflow (for example, to exercise some of the
+    # more subtle routing logic).  By default the preprocessor performs a
+    # handful of quick checks for count/height/leaves/traversals/reset
+    # in order to avoid the overhead of the agent, but this behaviour can
+    # be disabled by setting the FORCE_LLM_AGENT environment variable.
 
+    force_llm = os.environ.get("FORCE_LLM_AGENT", "0") in ("1", "true", "True")
+
+    # Quick local handling for simple queries to avoid LangGraph runtime issues
+    # (count, height, leaves, traversals, simple search/update).  Skipped
+    # entirely when force_llm is True.
+    import copy
+    from tree_utils import (
+        calculate_height,
+        find_leaf_nodes,
+        count_nodes,
+        inorder_traversal,
+        preorder_traversal,
+        postorder_traversal,
+        search_node,
+        update_node,
+    )
+
+    msg_lower = user_message.lower()
+
+    response_text = ""
+    modified = False
+
+    if not force_llm:
+        # RESET TREE
+        if re.search(r"\b(reset|clear|delete all|wipe)\b.*\b(tree|nodes)\b", msg_lower):
+            tree.tree_data = None
+            flag_modified(tree, "tree_data")
+            db.commit()
+            db.refresh(tree)
+            response_text = "✓ Tree reset successfully."
+            modified = True
+
+        # COUNT
+        elif re.search(r"\b(how many nodes|number of nodes|count nodes|show count( of nodes)?)\b", msg_lower):
+            n = count_nodes(tree.tree_data)
+            response_text = f"✓ Node count: {n}."
+            modified = False
+
+        # HEIGHT
+        elif re.search(r"\b(height|what is the height)\b", msg_lower):
+            h = calculate_height(tree.tree_data)
+            response_text = f"✓ Tree height: {h}."
+            modified = False
+
+        # LEAVES
+        elif re.search(r"\b(leaf|leaves|show leaf|show leaves)\b", msg_lower):
+            leaves = find_leaf_nodes(tree.tree_data)
+            response_text = f"✓ Leaf nodes: {', '.join(map(str, leaves)) if leaves else 'None'}."
+            modified = False
+
+        # TRAVERSALS
+        elif m := re.search(r"\b(inorder|preorder|postorder)\b", msg_lower):
+            t = m.group(1)
+            if t == "inorder":
+                seq = inorder_traversal(tree.tree_data)
+            elif t == "preorder":
+                seq = preorder_traversal(tree.tree_data)
+            else:
+                seq = postorder_traversal(tree.tree_data)
+            response_text = f"{t.capitalize()} traversal: {', '.join(map(str, seq)) if seq else ''}"
+            modified = False
+
+        # INSERT (basic pre-checks to provide clear guidance)
+        elif re.match(r"^\s*insert\b", msg_lower):
+            # special-case: user asking to create or insert the root explicitly
+            if "root" in msg_lower:
+                # extract first number in message, if any
+                mroot = re.search(r"(\d+)", msg_lower)
+                if mroot:
+                    val = int(mroot.group(1))
+                    if not tree.tree_data:
+                        if abs(val) > MAX_NODE_VALUE:
+                            response_text = f"✗ Value too large; maximum allowed is {MAX_NODE_VALUE}."
+                            modified = False
+                        else:
+                            tree.tree_data = {"value": val, "left": None, "right": None}
+                            flag_modified(tree, "tree_data")
+                            db.commit()
+                            db.refresh(tree)
+                            response_text = f"✓ Created root with value {val}."
+                            modified = True
+                        # we handled the message; skip further insert logic below
+                        # note: chat entry persistence occurs later
+                        # explicitly return early to avoid double-persisting
+                        chat_entry = ChatMessage(
+                            message=request.message,
+                            response=response_text,
+                            user_id=current_user.id,
+                            tree_id=request.tree_id,
+                        )
+                        db.add(chat_entry)
+                        db.commit()
+                        return {"response": response_text}
+                    else:
+                        response_text = "Root already exists."
+                        modified = False
+                        chat_entry = ChatMessage(
+                            message=request.message,
+                            response=response_text,
+                            user_id=current_user.id,
+                            tree_id=request.tree_id,
+                        )
+                        db.add(chat_entry)
+                        db.commit()
+                        return {"response": response_text}
+                else:
+                    # user mentioned root but no number; ask for clarification
+                    response_text = "Please specify a numeric value when creating the root node."
+                    modified = False
+                    chat_entry = ChatMessage(
+                        message=request.message,
+                        response=response_text,
+                        user_id=current_user.id,
+                        tree_id=request.tree_id,
+                    )
+                    db.add(chat_entry)
+                    db.commit()
+                    return {"response": response_text}
+            m = re.match(r"^\s*insert(?:\s+node)?\s+(\S+)", msg_lower)
+            if not m:
+                response_text = "Please specify the value to insert."
+                modified = False
+            else:
+                token = m.group(1)
+                try:
+                    val = int(token)
+                except Exception:
+                    response_text = "✗ Only numbers can be inserted."
+                    modified = False
+                else:
+                    if abs(val) > MAX_NODE_VALUE:
+                        response_text = f"✗ Value too large; maximum allowed is {MAX_NODE_VALUE}."
+                        modified = False
+                    else:
+                        # If tree empty, delegate to agent to create root
+                        if not tree.tree_data:
+                            tree_copy = copy.deepcopy(tree.tree_data)
+                            response_text, modified, new_tree = ai_handle_message(tree_copy, request.message)
+                            if modified:
+                                tree.tree_data = new_tree
+                                flag_modified(tree, "tree_data")
+                                db.commit()
+                                db.refresh(tree)
+                        else:
+                            # if the user hasn't even named a parent we can't do anything
+                            # useful locally; otherwise send the message to the agent and
+                            # let its improved insert logic handle missing direction and
+                            # single-slot auto-insertion.
+                            if not re.search(r"\b(of|child|parent|under)\b", msg_lower):
+                                response_text = "Please specify the parent node for the new value."
+                                modified = False
+                            else:
+                                tree_copy = copy.deepcopy(tree.tree_data)
+                                response_text, modified, new_tree = ai_handle_message(tree_copy, request.message)
+                                if modified:
+                                    tree.tree_data = new_tree
+                                    flag_modified(tree, "tree_data")
+                                    db.commit()
+                                    db.refresh(tree)
+        # SIMPLE SEARCH (e.g., 'search 5', 'search node 5', 'find 5')
+        elif m := re.search(r"(?:search|find)(?:\s+(?:node|for))?\s+(\d+)", msg_lower):
+            token = m.group(1)
+            try:
+                val = int(token)
+                found = search_node(tree.tree_data, val)
+                response_text = f"✓ Found node {val}." if found else f"✗ Node {val} not found in tree."
+            except Exception:
+                response_text = "Search value must be a number."
+            modified = False
+
+        # SIMPLE UPDATE (e.g., 'update 3 to 4' or 'update node 3 to 4')
+        elif m := re.match(r"^(?:update|change)\s+(?:node\s+)?(\S+)\s+to\s+(\S+)$", msg_lower):
+            old_token = m.group(1)
+            new_token = m.group(2)
+            try:
+                old_val = int(old_token)
+                new_val = int(new_token)
+            except Exception:
+                response_text = "Node values must be numbers."
+                modified = False
+            else:
+                if abs(new_val) > MAX_NODE_VALUE:
+                    response_text = f"✗ Value too large; maximum allowed is {MAX_NODE_VALUE}."
+                    modified = False
+                else:
+                    if not search_node(tree.tree_data, old_val):
+                        response_text = f"✗ Node {old_val} not found in tree."
+                        modified = False
+                    elif search_node(tree.tree_data, new_val) and new_val != old_val:
+                        response_text = f"✗ Node with value {new_val} already exists; cannot update to duplicate."
+                        modified = False
+                    else:
+                        update_node(tree.tree_data, old_val, new_val)
+                        flag_modified(tree, "tree_data")
+                        db.commit()
+                        db.refresh(tree)
+                        response_text = f"✓ Updated node {old_val} to {new_val}."
+                        modified = True
+
+        else:
+            # Fallback to AI agent for more complex commands
+            tree_copy = copy.deepcopy(tree.tree_data)
+            response_text, modified, new_tree = ai_handle_message(tree_copy, request.message)
+
+            # normalize any LangGraph internal errors to a user-friendly message
+            if isinstance(response_text, str) and response_text.startswith("Error processing request:"):
+                if "Can receive only one value per step" in response_text:
+                    logger.warning("LangGraph concurrent-update error for message: %s", request.message)
+                    response_text = (
+                        "Sorry, I couldn't understand that command. "
+                        "Please make sure to use numbers, e.g. 'Insert 5 as left child of 3'."
+                    )
+                else:
+                    logger.error("AI agent error: %s", response_text)
+                    response_text = "Sorry, I encountered an internal error processing your request."
+
+            # If agent modified the tree, persist changes (new_tree may be updated)
+            if modified:
+                tree.tree_data = new_tree
+                flag_modified(tree, "tree_data")
+                db.commit()
+                db.refresh(tree)
+    else:
+        # force_llm path: send every message straight to the agent without
+        # any preprocessing.  we perform the same error normalization and
+        # persistence afterwards.
+        tree_copy = copy.deepcopy(tree.tree_data)
+        response_text, modified, new_tree = ai_handle_message(tree_copy, request.message)
+
+        if isinstance(response_text, str) and response_text.startswith("Error processing request:"):
+            if "Can receive only one value per step" in response_text:
+                logger.warning("LangGraph concurrent-update error for message: %s", request.message)
+                response_text = (
+                    "Sorry, I couldn't understand that command. "
+                    "Please make sure to use numbers, e.g. 'Insert 5 as left child of 3'."
+                )
+            else:
+                logger.error("AI agent error: %s", response_text)
+                response_text = "Sorry, I encountered an internal error processing your request."
+
+        if modified:
+            tree.tree_data = new_tree
+            flag_modified(tree, "tree_data")
+            db.commit()
+            db.refresh(tree)
+        # (force_llm branch already handled normalization above, nothing else needed)
+
+    # Persist chat entry and return response
     chat_entry = ChatMessage(
         message=request.message,
         response=response_text,
         user_id=current_user.id,
-        tree_id=request.tree_id
+        tree_id=request.tree_id,
     )
-
     db.add(chat_entry)
     db.commit()
 
@@ -407,45 +699,77 @@ def clear_chat_history(tree_id: int,
 
 
 @app.post("/trees/{tree_id}/insert", response_model=TreeResponse)
+@app.post("/trees/{tree_id}/insert", response_model=TreeResponse)
 def insert_node_endpoint(
     tree_id: int,
     payload: TreeInsertRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Insert a node into the tree under a given parent.
-    If the tree is empty, create a new root node.
-    """
     tree = db.query(TreeSession).filter(
         TreeSession.id == tree_id,
         TreeSession.user_id == current_user.id,
-    ).first()
+    ).with_for_update().first()
+
+    # always log incoming payload so we can surface issues later
+    logger.info(f"insert_node_endpoint called with tree_id={tree_id} payload={payload.dict()}")
 
     if not tree:
+        logger.warning(f"insert_node_endpoint: tree {tree_id} not found for user {current_user.id}")
         raise HTTPException(status_code=404, detail="Tree not found")
 
+    # handle empty tree: create new root
     if tree.tree_data is None:
-        # if no tree yet, create root node using new_value
-        tree.tree_data = {"value": payload.new_value, "left": None, "right": None}
+        try:
+            new_root_val = int(payload.new_value)
+        except Exception:
+            logger.warning(f"insert_node_endpoint invalid new_value '{payload.new_value}' for empty tree")
+            raise HTTPException(status_code=400, detail="Node value must be a number")
+        if abs(new_root_val) > MAX_NODE_VALUE:
+            raise HTTPException(status_code=400, detail=f"Node value {new_root_val} is too large; max {MAX_NODE_VALUE}")
+
+        tree.tree_data = {"value": new_root_val, "left": None, "right": None}
         flag_modified(tree, "tree_data")
         db.commit()
         db.refresh(tree)
         return tree
 
+    # non-empty tree requires parent_value
     if payload.parent_value is None:
-        raise HTTPException(status_code=400, detail="Parent value is required for non-empty tree")
+        logger.warning(
+            f"insert_node_endpoint attempt to add root to non-empty tree {tree_id}"
+        )
+        raise HTTPException(
+            status_code=400,
+            detail="Root already exists. Cannot insert new root."
+        )
 
-    print(f"[INSERT] Before: parent={payload.parent_value}, new={payload.new_value}, dir={payload.direction}")
-    print(f"[INSERT] Tree structure before: {tree.tree_data}")
-    
-    inserted = insert_node(tree.tree_data, payload.parent_value, payload.new_value, payload.direction)
-    
-    print(f"[INSERT] Tree structure after: {tree.tree_data}")
-    print(f"[INSERT] Inserted: {inserted}")
-    
-    if not inserted:
-        raise HTTPException(status_code=400, detail="Parent node not found")
+    try:
+        new_val = int(payload.new_value)
+        parent_val = int(payload.parent_value)
+    except Exception as e:
+        logger.warning(f"insert_node_endpoint invalid numeric input: {e}")
+        raise HTTPException(status_code=400, detail="Node value must be a number")
+
+    if abs(new_val) > MAX_NODE_VALUE:
+        raise HTTPException(status_code=400, detail=f"Node value {new_val} is too large; max {MAX_NODE_VALUE}")
+
+    try:
+        tree.tree_data = insert_node(
+            tree.tree_data,
+            parent_val,
+            new_val,
+            payload.direction,
+        )
+    except ValueError as e:
+        logger.warning(f"insert_node_endpoint validation error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(
+            "insert_node_endpoint unexpected error",
+            exc_info=True,
+        )
+        raise HTTPException(status_code=400, detail="Invalid input.")
 
     flag_modified(tree, "tree_data")
     db.commit()
@@ -453,26 +777,46 @@ def insert_node_endpoint(
 
     return tree
 
+@app.post("/trees/{tree_id}/delete", response_model=TreeResponse)
 
 @app.post("/trees/{tree_id}/delete", response_model=TreeResponse)
 def delete_node_endpoint(
     tree_id: int,
     payload: TreeValueRequest,
+    force: bool = Query(False),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Delete a node by value from the tree.
-    """
     tree = db.query(TreeSession).filter(
         TreeSession.id == tree_id,
         TreeSession.user_id == current_user.id,
-    ).first()
+    ).with_for_update().first()
 
     if not tree:
         raise HTTPException(status_code=404, detail="Tree not found")
 
-    tree.tree_data = delete_node(tree.tree_data, payload.value)
+    from tree_utils import get_node
+
+    node = get_node(tree.tree_data, payload.value)
+
+    if node is None:
+        raise HTTPException(status_code=404, detail=f"Node {payload.value} not found")
+
+    # If two children and not forced
+    if node.get("left") is not None and node.get("right") is not None and not force:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Node {payload.value} has two children. "
+                "Call with ?force=true to delete entire subtree."
+            ),
+        )
+
+    try:
+        tree.tree_data = delete_node(tree.tree_data, payload.value)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     flag_modified(tree, "tree_data")
     db.commit()
     db.refresh(tree)
@@ -498,7 +842,33 @@ def update_node_endpoint(
     if not tree:
         raise HTTPException(status_code=404, detail="Tree not found")
 
-    tree.tree_data = update_node(tree.tree_data, payload.node_id, payload.new_value)
+    # Validate numeric input and existence
+    try:
+        old_val = int(payload.node_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Old node id must be a number")
+
+    try:
+        new_val = int(payload.new_value)
+    except Exception:
+        raise HTTPException(status_code=400, detail="New node value must be a number")
+
+    if abs(new_val) > MAX_NODE_VALUE:
+        raise HTTPException(status_code=400, detail=f"Node value {new_val} is too large; max {MAX_NODE_VALUE}")
+
+    from tree_utils import search_node
+
+    if not search_node(tree.tree_data, old_val):
+        raise HTTPException(status_code=404, detail=f"Node {old_val} not found")
+
+    if old_val != new_val and search_node(tree.tree_data, new_val):
+        raise HTTPException(status_code=400, detail=f"Node with value {new_val} already exists")
+
+    updated = update_node(tree.tree_data, old_val, new_val)
+    if not updated:
+        raise HTTPException(status_code=400, detail="Update failed")
+
+    tree.tree_data = updated
     flag_modified(tree, "tree_data")
     db.commit()
     db.refresh(tree)
@@ -546,8 +916,10 @@ def search_node_endpoint(
         TreeSession.user_id == current_user.id,
     ).first()
 
-    if not tree or not tree.tree_data:
+    if not tree:
         raise HTTPException(status_code=404, detail="Tree not found")
+    if not tree.tree_data:
+        raise HTTPException(status_code=400, detail="Tree is empty")
 
     target = payload.value
 

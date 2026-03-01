@@ -1,145 +1,218 @@
-# Agentic Tree - Binary Tree Data Structure Explorer
+🌳 Agentic Tree – Binary Tree Data Structure Explorer
 
-A full-stack web application for visualizing and intelligently analyzing binary tree data structures with AI chat integration.
+A full-stack web application for visualizing and interacting with a Binary Tree using an AI-powered LangGraph agent for natural language operations.
 
 **Live Demo:**
-- Frontend: https://agentic-tree-2.onrender.com/register
+- Frontend: https://agentic-tree-2.onrender.com/dashboard
 - Backend API: https://agentic-tree-1.onrender.com/
 - API Documentation: https://agentic-tree-1.onrender.com/docs
 
----
+📌 What This Project Implements
 
-## 🌟 Features Implemented
+This project implements a Binary Tree (not a BST) with:
 
-### Core Functionality
-- ✅ **User Authentication** - Register, login, JWT tokens with bcrypt password hashing
-- ✅ **Binary Tree CRUD** - Create, insert, delete, search, update nodes
-- ✅ **Tree Visualization** - Interactive React Flow canvas displaying binary trees
-- ✅ **AI Chat Integration** - Ask questions about trees, get intelligent responses
-- ✅ **Chat History** - Persistent storage of all chat interactions
-- ✅ **Tree Operations** - Insert, delete, search, in-order/pre-order/post-order traversals
-- ✅ **Responsive Design** - Works on desktop, tablet, and mobile devices
-- ✅ **API Documentation** - Interactive Swagger UI at `/docs`
+Structural insertions (left / right child)
 
-### Technology Stack
-- **Frontend:** React 18, Redux, React Flow, Vite
-- **Backend:** FastAPI, SQLAlchemy ORM, PostgreSQL
-- **Authentication:** JWT tokens, bcrypt password hashing
-- **AI Integration:** OpenAI GPT-3.5 Turbo (optional)
-- **Testing:** pytest (backend), Jest (frontend)
-- **Deployment:** Docker, docker-compose, Render
+Node deletion
 
----
+Node update
 
-## 📸 Screenshots
+Search
 
-### 1. Login Page
-![Login](./frontend/public/screenshots/login.png)
+Tree traversals (Inorder, Preorder, Postorder)
 
-### 2. Registration Page
-![Register](./frontend/public/screenshots/register.png)
+Height calculation
 
-### 3. Dashboard - Tree Visualization
-![Dashboard](./frontend/public/screenshots/dahsboard.png)
+Leaf node detection
 
-### 4. Tree Visualization (React Flow)
-![Tree Visual](./frontend/public/screenshots/tree_Visual.png)
+Node count
 
-### 5. Manual Controls (Insert/Delete/Search)
-![Manual Controls](./frontend/public/screenshots/manual.png)
+Tree reset
 
-### 6. AI Chat Interface
-![Chat](./frontend/public/screenshots/chatbot.png)
+All operations are available via:
 
-### 7. Save/Load Operations
-![Save](./frontend/public/screenshots/save.png)
+🔹 Manual REST APIs
 
----
+🔹 AI Chat powered by LangGraph
 
-## 🚀 Quick Start
+🚀 Features
+🌳 Binary Tree Operations
 
-### Option 1: Using Docker (Recommended)
+Insert node (as left/right child or root)
 
-```bash
-# Clone repository
+Delete node (with validation)
+
+Update node value
+
+Search node
+
+Reset entire tree
+
+Traversals: Inorder, Preorder, Postorder
+
+Height, Leaves, Node Count
+
+🤖 AI Chat (LangGraph Agent)
+
+Natural language tree operations
+
+Intent classification using Request Router
+
+Structured tree execution
+
+Context-aware responses
+
+Graceful error handling
+
+🔐 Authentication
+
+User registration & login
+
+JWT-based authentication
+
+bcrypt password hashing
+
+🎨 Visualization
+
+Interactive Binary Tree using React Flow
+
+Node highlighting
+
+Traversal path animation
+
+Responsive layout
+
+🗂 Persistence
+
+PostgreSQL (production)
+
+SQLite (testing)
+
+Chat history stored per tree
+
+🏗 Tech Stack
+
+Frontend
+
+React 18
+
+Redux Toolkit
+
+React Flow
+
+Vite
+
+Backend
+
+FastAPI
+
+SQLAlchemy
+
+PostgreSQL
+
+JWT Authentication
+
+AI Layer
+
+LangGraph
+
+LangChain
+
+OpenAI (optional LLM support)
+
+Testing
+
+pytest
+
+Jest
+
+Deployment
+
+Docker
+
+Render
+
+🧠 AI Agent Architecture (LangGraph)
+
+The backend uses a structured LangGraph workflow:
+
+User Message
+   ↓
+Intent Classification
+   ↓
+Request Router
+   ↓
+Tree Execution Node
+   ↓
+Response Generation
+
+The agent:
+
+Distinguishes between tree actions and general queries
+
+Validates inputs before execution
+
+Maintains tree context
+
+Produces deterministic structured operations
+
+🛠️ Quick Start
+Option 1 – Docker (Recommended)
 git clone https://github.com/BHAGYAMUNI/agentic-tree.git
 cd agentic-tree
-
-# Start all services
 docker-compose up
 
-# Access the application
-Frontend: http://localhost:5174
-Backend: http://localhost:8000
-API Docs: http://localhost:8000/docs
-```
+Access:
 
-### Option 2: Local Development
+Frontend → http://localhost:5174
 
-**Prerequisites:** Python 3.11+, Node.js 18+, PostgreSQL 16
+Backend → http://localhost:8000
 
-**Backend:**
-```bash
+Docs → http://localhost:8000/docs
+
+Option 2 – Local Development
+Backend
 cd backend
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
+venv\Scripts\activate   # Windows
 pip install -r requirements.txt
 python -m alembic upgrade head
-uvicorn venv.main:app --reload
-```
-
-**Frontend:**
-```bash
+uvicorn main:app --reload
+Frontend
 cd frontend
 npm install
 npm run dev
-```
-
-### Test Credentials
-```
+🔑 Test Credentials
 Email: raju@example.com
 Password: 987654
-```
+📁 Project Structure
+agentic-tree/
+│
+├── backend/
+│   ├── main.py
+│   ├── models.py
+│   ├── tree_utils.py
+│   ├── langgraph_agent.py
+│   ├── request_router.py
+│   └── auth.py
+│
+├── frontend/
+│   ├── components/
+│   ├── redux/
+│   ├── services/
+│   └── pages/
+│
+└── docker-compose.yml
+🧪 Testing
 
----
+Backend:
 
-## 📖 API Documentation
-
-All endpoints are documented in the **interactive Swagger UI** at `/docs` when backend is running.
-
-### Key Endpoints
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/auth/register` | POST | User registration |
-| `/auth/login` | POST | User login |
-| `/trees` | GET/POST | List or create trees |
-| `/trees/{id}/insert` | POST | Insert node into tree |
-| `/trees/{id}/delete` | POST | Delete node from tree |
-| `/trees/{id}/search` | POST | Search for node |
-| `/chat` | POST | Chat with AI agent |
-
----
-
-## 🧪 Testing
-
-### Backend Tests
-```bash
 cd backend
-pip install -r requirements.txt
-python -m pytest tests/ -v
-```
+pytest
 
-**Coverage:**
-- Tree algorithms (insert, delete, traversals, height, leaves)
-- API endpoints (auth, tree CRUD, chat)
-- JWT authentication and protected routes
+Frontend:
 
-### Frontend Tests
-```bash
 cd frontend
-npm install
 npm test
 ```
 
@@ -269,7 +342,7 @@ Deployed as **Render Static Site**:
 6. Deployed
 ```
 
-**Frontend Live:** https://agentic-tree-2.onrender.com/register
+**Frontend Live:** https://agentic-tree-2.onrender.com/dashboard
 
 **Step 4: CORS Configuration**
 
@@ -427,56 +500,42 @@ To enable LLM:
 ```bash
 export OPENAI_API_KEY="sk-..."
 export USE_LLM_AGENT=1
-```
+export OPENAI_API_KEY=your_key
 
-The system intelligently falls back to rule-based responses if LLM is unavailable.
+The system can operate with structured routing even without the LLM.
 
----
+🎬 Demo
 
-## 🐛 Troubleshooting
+📺 https://youtu.be/toXxtCOx6qc
 
-| Issue | Solution |
-|-------|----------|
-| Port already in use | Change port in docker-compose.yml or kill process using port |
-| Database connection error | Verify DATABASE_URL and PostgreSQL is running |
-| Frontend can't reach backend | Check CORS settings and API_URL in frontend config |
-| Tests failing | Ensure all dependencies installed: `pip install -r requirements.txt` |
+✅ What Was Successfully Implemented
 
----
+Full Binary Tree implementation
 
-## 🎬 Demo Video
+LangGraph-based agent workflow
 
-**Full 3-4 minute demo showing all features:**
+Request Router / Intent Classifier
 
-[Watch Demo Video on YouTube](https://youtu.be/toXxtCOx6qc)
+Structured state handling
 
-**Demo includes:**
-- User registration and login
-- Creating a binary tree
-- Inserting and deleting nodes
-- Real-time tree visualization
-- AI chat interaction
-- Responsive mobile view
+REST + AI unified execution
 
----
+Cloud deployment
 
-## 🙏 Acknowledgments
+End-to-end testing
 
-- **React Flow** - Tree visualization library
-- **FastAPI** - Web framework
-- **SQLAlchemy** - ORM
-- **OpenAI** - LLM API
-- **Render** - Cloud deployment platform
+💛 Final Note
 
----
+This project demonstrates:
 
-## 📞 Support
+Data structure implementation (Binary Tree)
 
-For issues or questions:
-- Check API documentation at `/docs`
-- Review logs: `docker-compose logs backend`
-- Check browser console: Browser DevTools → Console
+Agent architecture design (LangGraph + LangChain)
 
----
+Full-stack integration
 
-**Built with ❤️ for learning tree data structures and AI integration.**
+AI-assisted structured operations
+
+Production deployment
+
+Built with clarity, structure, and intentional architecture. 🌳✨

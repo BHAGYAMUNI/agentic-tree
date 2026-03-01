@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addMessage, clearMessages, setTyping } from '../redux/chatSlice';
+import { addMessage, clearMessages, setTyping, setMessages } from '../redux/chatSlice';
 import { chatAPI, treeAPI } from '../services/api';
 import { formatTime, convertTreeToFlowData } from '../utils/treeUtils';
 import { setTreeVisualization } from '../redux/treeSlice';
@@ -23,12 +23,46 @@ function ChatPanel() {
 
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
+  const lastSentRef = useRef(0);
   const messagesEndRef = useRef(null);
 
   // Auto-scroll to latest message
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // whenever the selected tree changes, refresh chat history
+  useEffect(() => {
+    if (selectedTree) {
+      // fetch from backend and populate Redux
+      chatAPI.getChatHistory(selectedTree.id)
+        .then((chats) => {
+          // chats is array of {id, message, response, timestamp}
+          const formatted = [];
+          chats.forEach((c) => {
+            formatted.push({
+              id: `${c.id}-u`,
+              text: c.message,
+              sender: 'user',
+              timestamp: c.timestamp,
+            });
+            formatted.push({
+              id: `${c.id}-b`,
+              text: c.response,
+              sender: 'bot',
+              timestamp: c.timestamp,
+            });
+          });
+          dispatch(setMessages(formatted));
+        })
+        .catch((err) => {
+          console.error('Failed to load chat history:', err);
+          dispatch(clearMessages());
+        });
+    } else {
+      dispatch(clearMessages());
+    }
+  }, [selectedTree]);
 
   useEffect(() => {
     scrollToBottom();
@@ -59,6 +93,11 @@ function ChatPanel() {
     if (!inputValue.trim()) {
       return;
     }
+
+    // simple debounce to prevent rapid duplicate sends
+    const now = Date.now();
+    if (now - lastSentRef.current < 700) return;
+    lastSentRef.current = now;
 
     const userMessage = inputValue.trim();
     setInputValue('');
@@ -213,7 +252,7 @@ function ChatPanel() {
                   handleSendMessage(e);
                 }
               }}
-              placeholder="Ask about the tree or tree operations..."
+              placeholder=""
               disabled={loading || typing}
             />
             <button

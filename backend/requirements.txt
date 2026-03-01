@@ -24,6 +24,14 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 uvicorn==0.41.0
 # Optional LLM dependencies (install if you plan to enable USE_LLM_AGENT)
-langchain>=0.0.210
+# LangChain is used by the LangGraph agent.  The package went through a
+# breaking restructure in the 1.x series that moved `schema` and other
+# classes around; pin to anything below 1.0 so users don't accidentally pull
+# in a version we haven't tested against.  If you intentionally upgrade to a
+# later major release you'll also need to update the imports in
+# `langgraph_agent.py` accordingly.
+langchain>=0.0.210,<1.0
+langchain-openai>=0.0.1
+langgraph>=0.0.20
 openai>=1.0.0
 pytest

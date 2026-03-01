@@ -15,7 +15,7 @@ Architecture:
 
 import json
 import re
-from typing import TypedDict, Optional, Annotated
+from typing import TypedDict, Optional
 from langgraph.graph.message import add_messages
 
 # langgraph is a runtime dependency that may not be installed in every
@@ -32,7 +32,15 @@ except ImportError as import_err:  # pragma: no cover - environment issue
         "Install the backend dependencies (e.g. `pip install -r backend/requirements.txt` "
         "or `pip install langgraph langchain langchain-openai`)"
     ) from import_err
-from langchain_openai import ChatOpenAI
+# ChatOpenAI has moved across langchain releases; try multiple import locations
+try:
+    from langchain.chat_models import ChatOpenAI
+except Exception:
+    try:
+        # older shim or alternative package
+        from langchain_openai import ChatOpenAI  # type: ignore
+    except Exception:
+        ChatOpenAI = None
 
 # the human/system message classes are only needed if the LLM path is used.
 # in some versions of `langchain` the module layout may change, and importing
@@ -65,7 +73,7 @@ logger = logging.getLogger(__name__)
 
 # Type definitions for LangGraph state
 class AgentState(TypedDict):
-    tree: Annotated[Optional[dict], lambda x, y: y]
+    tree: Optional[dict]  # No custom reducer needed
     user_message: str
     intent_type: IntentType
     intent_params: dict
@@ -88,11 +96,17 @@ class TreeAgent:
             try:
                 api_key = os.environ.get("OPENAI_API_KEY")
                 if api_key:
+                    # Use LangChain ChatOpenAI; pass API key explicitly if present
                     self.llm = ChatOpenAI(
-                        api_key=api_key,
-                        model="gpt-3.5-turbo",
+                        model_name="gpt-3.5-turbo",
                         temperature=0,
-                        max_tokens=500,
+                        openai_api_key=api_key,
+                    )
+                else:
+                    # Rely on environment-based key discovery
+                    self.llm = ChatOpenAI(
+                        model_name="gpt-3.5-turbo",
+                        temperature=0,
                     )
             except Exception as e:
                 print(f"Warning: Could not initialize LLM: {e}")
@@ -123,7 +137,10 @@ class TreeAgent:
         graph.add_node("finalizer", self._finalize_response)
 
         # Define edges
-        graph.add_edge("classifier", "tree_action")  # Default
+        # NOTE: Use conditional routing only — do NOT add an unconditional
+        # edge from `classifier` to `tree_action` because that causes both
+        # branches to execute and leads to LangGraph channel conflicts
+        # (multiple writes to the same state keys in one step).
         graph.set_entry_point("classifier")
 
         # Conditional routing based on intent
@@ -174,7 +191,10 @@ class TreeAgent:
                         "parent_value": pending["parent_value"],
                         "position": "left"
                     },
-                    "pending_action": None
+                    "pending_action": None,
+                    "response": "",
+                    "tree_modified": False,
+                    "error": None
                 }
 
             if "right" in message_lower:
@@ -185,7 +205,10 @@ class TreeAgent:
                         "parent_value": pending["parent_value"],
                         "position": "right"
                     },
-                    "pending_action": None
+                    "pending_action": None,
+                    "response": "",
+                    "tree_modified": False,
+                    "error": None
                 }
 
         # ---------------------------------------------------
@@ -200,7 +223,8 @@ class TreeAgent:
             "intent_params": params or {},
             "tree_modified": False,
             "error": None,
-            "pending_action": None
+            "pending_action": None,
+            "response": ""
         }
 
     def _handle_tree_action(self, state: AgentState):
@@ -304,10 +328,17 @@ class TreeAgent:
             }
 
         # -----------------------------------------
-        # 🔹 If direction missing → clarification
+        # 🔹 If direction missing or invalid → clarification or explicit rejection
         # -----------------------------------------
         if position not in ("left", "right"):
+            # If user explicitly provided a (but invalid) direction, reject it
+            if position is not None:
+                return {
+                    "response": "Invalid direction. Use left or right.",
+                    "tree_modified": False
+                }
 
+            # otherwise position is missing — check available slots and ask
             left_child = parent_node.get("left")
             right_child = parent_node.get("right")
 
@@ -611,13 +642,22 @@ Provide concise, helpful responses about trees and data structures."""
                     HumanMessage(content=user_query),
                 ]
 
-                response = self.llm.invoke(messages)
-                state["response"] = response.content
+                # LangChain ChatOpenAI is callable with a list of Message objects
+                resp = self.llm(messages)
+                # resp may be an AIMessage or a list/container; extract content robustly
+                if hasattr(resp, "content"):
+                    content = resp.content
+                elif isinstance(resp, (list, tuple)) and len(resp) > 0 and hasattr(resp[0], "content"):
+                    content = resp[0].content
+                else:
+                    content = str(resp)
+                state["response"] = content
             except Exception as e:
                 state["response"] = self._get_fallback_response(user_query, tree_info)
         else:
             state["response"] = self._get_fallback_response(user_query, tree_info)
 
+        state["tree_modified"] = False
         return state
 
     def _get_tree_info(self, tree: dict) -> str:
@@ -641,7 +681,27 @@ Tree Summary:
         """Provide fallback response when LLM is unavailable"""
         lower_query = query.lower()
 
-        if any(word in lower_query for word in ["help", "command", "how", "what"]):
+        # Specific helpful fallbacks for common user questions
+        if "how do you insert" in lower_query or "how to insert" in lower_query or "insert a node" in lower_query:
+            return (
+                "To insert a node:\n"
+                "1) Pick a numeric value for the node (values must be unique).\n"
+                "2) Specify where to insert it, e.g. 'Insert 5 as left child of 3'.\n"
+                "   - You can also say 'Insert 5 under 3' and I'll auto-select the free slot or ask 'left or right?' if needed.\n"
+                "3) If the parent doesn't exist, create the root first: 'Insert 10 as root'."
+            )
+
+        if "what is a binary tree" in lower_query or "what is binary tree" in lower_query:
+            return (
+                "A binary tree is a tree data structure where each node has at most two children,\n"
+                "commonly referred to as the left and right child. It's used for sorted data,\n"
+                "search trees, heaps, and many algorithms that rely on hierarchical structure."
+            )
+
+        if "how are you" in lower_query or "how're you" in lower_query:
+            return "I'm a tree assistant — ready to help with binary tree operations."
+
+        if any(word in lower_query for word in ["help", "command"]):
             return (
                 "I can help you with binary tree operations! Try commands like:\n"
                 "- 'Insert 8 as left child of 4'\n"
@@ -651,10 +711,11 @@ Tree Summary:
                 "- 'What is the height?'\n"
                 "- 'Show leaf nodes'"
             )
-        elif any(word in lower_query for word in ["tree", "structure"]):
+
+        if any(word in lower_query for word in ["tree", "structure"]):
             return f"Current tree info:{tree_info}"
-        else:
-            return "I'm a tree assistant. Ask me about tree operations or structure!"
+
+        return "I'm a tree assistant. Ask me about tree operations or structure!"
 
     def _finalize_response(self, state: AgentState):
 

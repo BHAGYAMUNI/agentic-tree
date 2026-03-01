@@ -39,6 +39,8 @@ class RequestRouter:
                 r'^insert\s+(\S+)$',
                 # under-phrasing: assume parent but not direction
                 r'^insert\s+(\S+)\s+under\s+(\S+)$',
+                # capture arbitrary position (to detect invalid directions like "middle")
+                r'^insert\s+(\S+)\s+as\s+(\S+)\s+child\s+of\s+(\S+)$',
             ],
             IntentType.DELETE: [
                 r'^delete\s+(\d+)$',

@@ -299,6 +299,15 @@ class TreeAgent:
         position = params.get("position")
 
         # -----------------------------------------
+        # 🔹 Check for root insertion when tree exists
+        # -----------------------------------------
+        if parent_value is None and position is None and tree is not None:
+            return {
+                "response": "Root already exists.",
+                "tree_modified": False
+            }
+
+        # -----------------------------------------
         # 🔹 Validate numeric values
         # -----------------------------------------
         try:

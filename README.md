@@ -459,13 +459,15 @@ agentic-tree/
 
 ## 🤖 AI Integration
 
-The chat system uses **LangGraph + LangChain exclusively** for intelligent natural-language processing:
-- **All messages routed through LangGraph agent** (no rule-based shortcuts)
-- **RequestRouter / Intent Classifier** routes between tree operations and conversational responses
-- **Optional OpenAI GPT-3.5 Turbo** for open-ended Q&A (when enabled)
-- **Fallback mode** provides deterministic tree-focused responses when LLM unavailable
+The chat system uses **rule-based pattern matching** as the primary method, with optional **OpenAI GPT-3.5 Turbo** for more intelligent responses.
 
-The system intelligently falls back to rule-based responses if LLM is unavailable.
+To enable LLM:
+```bash
+export OPENAI_API_KEY="sk-..."
+export USE_LLM_AGENT=1
+```
+
+If `USE_LLM_AGENT=0` or `OPENAI_API_KEY` not set, the agent provides helpful rule-based responses (tree-focused, no external API calls).
 
 ---
 

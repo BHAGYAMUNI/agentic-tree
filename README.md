@@ -457,17 +457,27 @@ agentic-tree/
 
 ---
 
+
 ## 🤖 AI Integration
 
-The chat system uses **rule-based pattern matching** as the primary method, with optional **OpenAI GPT-3.5 Turbo** for more intelligent responses.
+Chat is powered by a **LangGraph agent** backed by LangChain.  Instead of relying
+on brittle rule‑based matching, all user messages are handled by the agent's
+workflow; the previous regex rules now exist only as a quick pre‑processor for
+common queries and as a fallback when the LLM is disabled.  The result is a
+flexible, conversational chatbot that understands a wide variety of natural
+language tree commands and can answer general questions when an LLM is
+enabled.
 
-To enable LLM:
+To activate the OpenAI LLM (GPT-3.5 Turbo) so the agent can provide broad
+chat-style responses, set the following environment variables:
 ```bash
 export OPENAI_API_KEY="sk-..."
 export USE_LLM_AGENT=1
 ```
 
 If `USE_LLM_AGENT=0` or `OPENAI_API_KEY` not set, the agent provides helpful rule-based responses (tree-focused, no external API calls).
+
+---
 
 ---
 

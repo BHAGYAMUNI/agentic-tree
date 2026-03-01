@@ -486,7 +486,7 @@ If `USE_LLM_AGENT=0` or `OPENAI_API_KEY` not set, the agent provides helpful rul
 
 **Full 3-4 minute demo showing all features:**
 
-[Watch Demo Video on YouTube](https://youtu.be/toXxtCOx6qc)
+[Watch Demo Video on YouTube](https://youtu.be/PFV30TTD2h4)
 
 **Demo includes:**
 - User registration and login

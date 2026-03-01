@@ -237,6 +237,12 @@ class TreeAgent:
         # EMPTY TREE HANDLING
         # -----------------------------
         if tree is None:
+            # handle reset even if tree is empty
+            if intent_type == IntentType.RESET:
+                return {
+                    "response": "Tree is already empty.",
+                    "tree_modified": False
+                }
 
             if intent_type == IntentType.INSERT:
                 new_value = params.get("new_value")
@@ -264,6 +270,13 @@ class TreeAgent:
         # TREE EXISTS
         # -----------------------------
         try:
+            if intent_type == IntentType.RESET:
+                # clear entire tree
+                return {
+                    "tree": None,
+                    "response": "✓ Tree reset.",
+                    "tree_modified": True
+                }
 
             if intent_type == IntentType.INSERT:
                 return self._handle_insert(state, tree, params)
@@ -640,11 +653,15 @@ class TreeAgent:
                             "backend/requirements.txt."
                         ) from e
 
-                system_prompt = f"""You are a helpful assistant discussing binary trees.
-The current tree structure is:
-{tree_info}
-
-Provide concise, helpful responses about trees and data structures."""
+                # the system prompt gives the model context about the current tree
+                # but does not restrict it from answering other kinds of questions.
+                system_prompt = (
+                    "You are a helpful, conversational AI assistant. "
+                    "You may be asked general questions on any topic, but you also have access to the current binary tree state.\n"
+                    "When responding, use the tree context only if the user query relates to the tree; otherwise feel free to answer normally.\n\n"
+                    "CURRENT TREE STRUCTURE:\n" + tree_info + "\n"
+                    "Provide concise, friendly, and accurate responses."
+                )
 
                 messages = [
                     SystemMessage(content=system_prompt),
@@ -721,10 +738,28 @@ Tree Summary:
                 "- 'Show leaf nodes'"
             )
 
-        if any(word in lower_query for word in ["tree", "structure"]):
+        # only return the raw tree summary when the user explicitly asks
+        # about the *current* tree rather than mentioning "tree" in a
+        # general sense. examples: "current tree", "tree info",
+        # "show tree".  this prevents queries like "explain about
+        # binary tree" from being hijacked.
+        if re.search(r"\b(current\s+tree|tree\s+info|show\s+tree|what\s+is\s+the\s+tree)\b", lower_query):
             return f"Current tree info:{tree_info}"
 
-        return "I'm a tree assistant. Ask me about tree operations or structure!"
+        # additional explanation triggers
+        if "explain about binary tree" in lower_query or "tell me about binary tree" in lower_query:
+            # reuse the earlier binary-tree explanation
+            return (
+                "A binary tree is a tree data structure where each node has at most two children,\n"
+                "commonly referred to as the left and right child. It's used for sorted data,\n"
+                "search trees, heaps, and many algorithms that rely on hierarchical structure."
+            )
+
+        # generic fallback when LLM unavailable:
+        return (
+            "I'm a tree assistant but can also chat generally. "
+            "For tree operations try commands like 'insert', 'delete', 'search', or ask about height, leaves, etc."
+        )
 
     def _finalize_response(self, state: AgentState):
 

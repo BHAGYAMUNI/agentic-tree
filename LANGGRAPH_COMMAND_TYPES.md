@@ -67,15 +67,19 @@ This file lists only the commands the agent currently supports — phrasing vari
 - `Delete 5 force` — delete node and subtree even if two children
 
 ## Update
-- `Update 5 to 8` or `Change 5 to 8`
+- `Update 5 to 8` or `Change 5 to 8` (also `Edit 5 to 8`)
 
 ## Search
 - `Search 5`, `Find 5`, `Search for 5`
 
 ## Query (metrics)
 - Height: `height` / `What is the height?`
+ - Height: `height` / `What is the height?` / `height of tree` / `tree height` / `how tall is the tree`
 - Count: `count nodes` / `How many nodes?`
 - Leaves: `show leaves` / `leaf nodes`
+
+## Reset
+- `reset tree` / `clear tree` / `wipe tree` / `delete all`
 
 ## Traversals
 - `inorder` / `show inorder`
@@ -85,6 +89,7 @@ This file lists only the commands the agent currently supports — phrasing vari
 ## General (Q&A)
 - The agent answers tree-related questions and can provide explanations (e.g., "How do you insert a node?", "What is a binary tree?").
 - For broad chat-style answers enable an LLM: set `USE_LLM_AGENT=1` and provide `OPENAI_API_KEY`.
+	Once the LLM is enabled the chatbot can handle virtually any free-form question, not just tree operations. The tree context is supplied if your query mentions the current tree.
 
 ## Rejection cases (brief)
 - Non-numeric values rejected (node values must be numbers)
@@ -92,8 +97,3 @@ This file lists only the commands the agent currently supports — phrasing vari
 - Invalid directions (only `left` / `right`) rejected
 - Operations on non-existent parents rejected
 
----
-Note: This file intentionally lists only supported commands — examples or phrasing not listed here are unsupported and will be rejected.
-
-
-| Traversal | Examples | Order |

@@ -168,6 +168,37 @@ def test_chat_flexible_insert_phrasing():
     get_resp = client.get(f'/trees/{tree_id}', headers=auth_headers(token))
     assert get_resp.json()['tree_data']['right']['value'] == 15
 
+    # ------------------------------------------------------------------
+    # also verify traversal/query semantics are flexible
+    # ------------------------------------------------------------------
+    # inorder should be available as plain 'in order' or 'pre order'
+    for phrase, expect in [
+        ("in order", "inorder traversal"),
+        ("pre order", "preorder traversal"),
+        ("postorder", "postorder traversal"),
+    ]:
+        resp = client.post('/chat', json={"tree_id": tree_id, "message": phrase}, headers=auth_headers(token))
+        assert resp.status_code == 200
+        assert expect in resp.json()['response'].lower()
+
+    # leaves query with plural/singular variations
+    resp = client.post('/chat', json={"tree_id": tree_id, "message": "show leaves"}, headers=auth_headers(token))
+    assert resp.status_code == 200
+    assert 'leaf' in resp.json()['response'].lower()
+
+    # height query variations
+    for height_phrase in ["height of tree", "tree height", "how tall is the tree", "how tall tree"]:
+        resp = client.post('/chat', json={"tree_id": tree_id, "message": height_phrase}, headers=auth_headers(token))
+        assert resp.status_code == 200
+        assert 'height' in resp.json()['response'].lower()
+
+    # asking for an explanation about binary trees should not return the
+    # current tree info
+    resp = client.post('/chat', json={"tree_id": tree_id, "message": "explain about binary tree"}, headers=auth_headers(token))
+    assert resp.status_code == 200
+    assert 'binary tree' in resp.json()['response'].lower()
+    assert 'current tree info' not in resp.json()['response'].lower()
+
         token = register_user(email='rootphrases@example.com')
         # start with an empty tree
         resp = client.post('/trees', json={"name": "troot", "tree_data": None}, headers=auth_headers(token))
@@ -207,6 +238,33 @@ def test_duplicate_value_rejected():
     resp = client.post(f'/trees/{tree_id}/insert', json={"parent_value": 10, "new_value": 5, "direction": "left"}, headers=auth_headers(token))
     assert resp.status_code == 400
     assert 'left child of 10 already exists' in resp.json().get('detail', '').lower()
+
+
+def test_update_synonym_edit():
+    token = register_user(email='edit@example.com')
+    resp = client.post('/trees', json={"name": "tedit", "tree_data": {"value":10, "left": None, "right": None}}, headers=auth_headers(token))
+    assert resp.status_code == 200
+    tree_id = resp.json()['id']
+
+    # update using the word "edit"
+    resp = client.post('/chat', json={"tree_id": tree_id, "message": "edit 10 to 20"}, headers=auth_headers(token))
+    assert resp.status_code == 200
+    assert 'updated' in resp.json()['response'].lower() or 'edit' in resp.json()['response'].lower()
+
+    # verify the value changed
+    get_resp = client.get(f'/trees/{tree_id}', headers=auth_headers(token))
+    assert get_resp.json()['tree_data']['value'] == 20
+
+
+def test_general_chat_fallback():
+    """Ensure that non-tree questions still elicit a reasonable response."""
+    token = register_user(email='general@example.com')
+    resp = client.post('/trees', json={"name": "tgeneral", "tree_data": None}, headers=auth_headers(token))
+    tree_id = resp.json()['id']
+
+    resp = client.post('/chat', json={"tree_id": tree_id, "message": "How are you?"}, headers=auth_headers(token))
+    assert resp.status_code == 200
+    assert resp.json()['response']  # should be some string
 
 
 def test_insert_under_two_children_rejected():

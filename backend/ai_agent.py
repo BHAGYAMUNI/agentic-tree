@@ -61,11 +61,16 @@ def handle_message(tree, message):
     if tree is None:
         return "No tree selected.", False, tree
 
+    # quick reset/clear verbs before anything else
+    if any(phrase in user_message for phrase in ["reset tree", "clear tree", "wipe tree", "delete all", "clear all"]):
+        # simply wipe the tree
+        return "✓ Tree reset.", True, None
+
     # Basic supervisor logic (keeps current behavior)
     if "height" in user_message:
         height = calculate_height(tree)
         return f"The height of the tree is {height}.", False, tree
-    elif "leaf" in user_message:
+    elif "leaf" in user_message or "leaves" in user_message:
         leaves = find_leaf_nodes(tree)
         return f"Leaf nodes are: {leaves}", False, tree
     elif "insert" in user_message:
@@ -119,13 +124,13 @@ def handle_message(tree, message):
                 return f"✗ Node {value_to_search} not found in the tree.", False, tree
         else:
             return "Please specify the value to search for (e.g., 'search for 5').", False, tree
-    elif "inorder" in user_message:
+    elif re.search(r'\bin[- ]?order\b', user_message):
         result = inorder_traversal(tree)
         return f"Inorder traversal: {result}", False, tree
-    elif "preorder" in user_message:
+    elif re.search(r'\bpre[- ]?order\b', user_message):
         result = preorder_traversal(tree)
         return f"Preorder traversal: {result}", False, tree
-    elif "postorder" in user_message:
+    elif re.search(r'\bpost[- ]?order\b', user_message):
         result = postorder_traversal(tree)
         return f"Postorder traversal: {result}", False, tree
 

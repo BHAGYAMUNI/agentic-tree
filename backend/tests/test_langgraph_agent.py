@@ -52,6 +52,19 @@ class TestRequestRouter:
         assert intent == IntentType.QUERY
         assert params["query_type"] == "height"
 
+    def test_query_intent_height_variations(self):
+        """Verify additional height phrasings are classified as queries"""
+        for phrase in ["height of tree", "tree height", "how tall is the tree"]:
+            intent, params = self.router.classify_intent(phrase)
+            assert intent == IntentType.QUERY, f"{phrase} not classified as QUERY"
+            assert params.get("query_type") == "height"
+
+    def test_query_intent_height_in_long_sentence(self):
+        """Even when height appears inside a longer sentence, it should still be a height query"""
+        intent, params = self.router.classify_intent("height is still issue explain about binary tree")
+        assert intent == IntentType.QUERY
+        assert params.get("query_type") == "height"
+
     def test_general_conversation(self):
         """Test general conversation"""
         intent, params = self.router.classify_intent("Tell me about trees")

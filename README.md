@@ -142,33 +142,7 @@ All endpoints are documented in the **interactive Swagger UI** at `/docs` when b
 
 ---
 
-## 🧪 Testing
-
-### Backend Tests - Comprehensive Verification Suite
-
-The backend includes a complete test suite with **35 test cases** covering:
-
-**Manual Controls (15 tests)**
-- 8 valid operation tests (insert root, insert children, delete, search, reset)
-- 7 error/rejection tests (duplicate, occupied slot, invalid direction, etc.)
-
-**AI Chat Operations (17 tests)**
-- 9 valid chat operation tests (insert, delete, search, query operations)
-- 8 rejection/validation tests (missing direction, duplicate, malformed commands)
-
-**Stress & Edge Cases (3 tests)**
-- Deep chain verification with height calculation
-- Message length validation
-- Flexible phrasing support
-
-Run the full test suite:
-```bash
-cd backend
-pip install -r requirements.txt
-python -m pytest tests/test_comprehensive_verification.py -v
-```
-
-📖 **Complete AI Chat Commands Reference:** See [AI_CHAT_COMMANDS.md](./AI_CHAT_COMMANDS.md) for:
+📖 **Complete AI Chat Commands Reference:** See [LANGGRAPH_COMMAND_TYPES.md](./LANGGRAPH_COMMAND_TYPES.md) for:
 - All available chat commands with syntax
 - Expected outputs for successful operations
 - All rejection cases and error messages
@@ -181,22 +155,6 @@ cd frontend
 npm install
 npm test
 ```
-
----
-
-## � AI Chat Commands Reference
-
-Comprehensive guide to all AI chat commands including successful operations, rejection cases, and flexible phrasing:
-
-📖 **[AI_CHAT_COMMANDS.md](./AI_CHAT_COMMANDS.md)** - Complete reference with:
-- All successful commands and expected responses
-- All rejection cases with explanations
-- Flexible phrasing examples
-- Error messages and HTTP status codes
-- Test case mapping
-- Quick reference table
-
----
 
 ## 🛠️ Development Process
 
@@ -352,7 +310,7 @@ Deployed as **Render Static Site**:
 6. Deployed
 ```
 
-**Frontend Live:** https://agentic-tree-2.onrender.com/dashboard
+**Frontend Live:** https://agentic-tree-2.onrender.com
 
 **Step 4: CORS Configuration**
 
@@ -450,27 +408,22 @@ Assignment specified: *"Deploy to a cloud platform (e.g., Heroku, AWS EC2)"*
 ```
 agentic-tree/
 ├── backend/
-│   ├── venv/
-│   │   ├── main.py              # FastAPI app & endpoints
-│   │   ├── models.py            # SQLAlchemy ORM models
-│   │   ├── tree_utils.py        # Tree algorithms
-│   │   ├── ai_agent.py          # AI orchestrator
-│   │   ├── ai_agent_adapter.py  # LLM integration
-│   │   └── auth.py              # JWT & password hashing
+│   ├── main.py
+│   ├── models.py
+│   ├── tree_utils.py
+│   ├── langgraph_agent.py
+│   ├── request_router.py
+│   ├── database.py
+│   ├── auth.py
 │   ├── tests/
-│   │   ├── test_tree_utils.py   # Unit tests
-│   │   └── test_endpoints.py    # Integration tests
-│   ├── requirements.txt
-│   └── Dockerfile
+│   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── components/          # React components
-│   │   ├── pages/               # Pages (Login, Dashboard)
-│   │   ├── redux/               # State management
-│   │   └── services/            # API calls
-│   ├── package.json
-│   └── Dockerfile
-├── docker-compose.yml           # Multi-service orchestration
+│   ├── components/
+│   ├── redux/
+│   ├── services/
+│   └── package.json
+├── docker-compose.yml
 └── README.md
 ```
 
@@ -506,13 +459,11 @@ agentic-tree/
 
 ## 🤖 AI Integration
 
-The chat system uses **rule-based pattern matching** as the primary method, with optional **OpenAI GPT-3.5 Turbo** for more intelligent responses.
-
-To enable LLM:
-```bash
-export OPENAI_API_KEY="sk-..."
-export USE_LLM_AGENT=1
-```
+The chat system uses **LangGraph + LangChain exclusively** for intelligent natural-language processing:
+- **All messages routed through LangGraph agent** (no rule-based shortcuts)
+- **RequestRouter / Intent Classifier** routes between tree operations and conversational responses
+- **Optional OpenAI GPT-3.5 Turbo** for open-ended Q&A (when enabled)
+- **Fallback mode** provides deterministic tree-focused responses when LLM unavailable
 
 The system intelligently falls back to rule-based responses if LLM is unavailable.
 

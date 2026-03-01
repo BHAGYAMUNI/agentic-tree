@@ -3,7 +3,7 @@
 A full-stack web application for visualizing and intelligently analyzing binary tree data structures with **LangGraph AI agent integration** for natural language tree operations.
 
 **Live Demo:**
-- Frontend: https://agentic-tree-2.onrender.com/dashboard
+- Frontend: https://agentic-tree-2.onrender.com/
 - Backend API: https://agentic-tree-1.onrender.com/
 - API Documentation: https://agentic-tree-1.onrender.com/docs
 
